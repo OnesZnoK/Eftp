@@ -1,0 +1,5 @@
+1、dll文件存放到exe生成目录下
+
+2、include文件夹中的内容拷贝出来存放到Qt安装路径下的include目录中
+
+3、lib/MDd-Debug-x86和lib/MD-Release-x86 中内容全部拷贝出来存放到编译完成后lib对应目录中，例如Debug模式编译的存放到Debug生成目录，Release模式编译的存放到Release生成目录中（此处仅限32位）
