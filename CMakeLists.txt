@@ -19,5 +19,6 @@ find_package(Qt5 REQUIRED COMPONENTS Core Network Gui Widgets Concurrent Sql Xml
 set(QT_VERSION_MAJOR 5)
 
 add_subdirectory(QtLogger)
+add_subdirectory(JsonHpp)
 add_subdirectory(HttpCilent)
 add_subdirectory(EftpClient)
