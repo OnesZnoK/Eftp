@@ -1,4 +1,4 @@
-﻿set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
@@ -11,8 +11,8 @@ add_library(HttpCilent SHARED
 )
 
 set_target_properties(HttpCilent PROPERTIES
-    DEBUG_POSTFIX "d"     
-    DEFINE_SYMBOL HTTPCLIENT_LIBRARY 
+    DEBUG_POSTFIX "d"
+    DEFINE_SYMBOL HTTPCLIENT_LIBRARY
 )
 
 target_link_libraries(HttpCilent PRIVATE

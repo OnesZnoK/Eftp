@@ -46,6 +46,19 @@ public:
      */
     static HttpResult GetRaw(const std::string& fullUrl,int timeoutSec = 10);
 
+    /**
+     * @brief 文件上传
+     * @param fullUrl 完整地址 (例如
+     * @param filePath 本地文件路径
+     * @param fieldName 表单字段名（默认 "file"）
+     * @param timeoutSec 超时时间（默认60秒）
+     * @return 成功返回服务器响应
+     */
+    static HttpResult UploadFile(const std::string& fullUrl,
+                                 const std::string& filePath,
+                                 const std::string& fieldName = "file",
+                                 int timeoutSec = 60);
+
 private:
     // 解析 URL，将 http://host:port/path 拆分为 host:port 和 /path
     static bool ParseFullUrl(const std::string& fullUrl,std::string& host,std::string& path);

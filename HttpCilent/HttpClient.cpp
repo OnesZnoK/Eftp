@@ -1,5 +1,6 @@
 #include "HttpClient.h"
 #include <regex>
+#include <fstream>
 
 
 bool HttpClient::ParseFullUrl(const std::string& fullUrl, std::string& host, std::string& path)
@@ -96,6 +97,63 @@ loop:
     }
     else {
         QtLogger::WriteLog(QString("GET请求成功，状态码: %1").arg(result.status));
+    }
+
+    return result;
+}
+
+HttpResult HttpClient::UploadFile(const std::string& fullUrl,
+                                   const std::string& filePath,
+                                   const std::string& fieldName,
+                                   int timeoutSec)
+{
+    HttpResult result;
+    std::string host, path;
+    if (!ParseFullUrl(fullUrl, host, path))
+    {
+        QtLogger::WriteLog("URL解析失败: " + QString::fromStdString(fullUrl), enLogType::WARNING);
+        return result;
+    }
+
+    // 读取文件内容
+    std::ifstream file(filePath, std::ios::binary);
+    if (!file.is_open()) {
+        QtLogger::WriteLog("无法打开文件: " + QString::fromStdString(filePath), enLogType::WARNING);
+        return result;
+    }
+    std::string fileContent((std::istreambuf_iterator<char>(file)),
+                             std::istreambuf_iterator<char>());
+    file.close();
+
+    // 提取文件名
+    std::string filename = filePath;
+    size_t pos = filename.find_last_of("/\\");
+    if (pos != std::string::npos) {
+        filename = filename.substr(pos + 1);
+    }
+
+    httplib::Client cli(host);
+    cli.set_connection_timeout(timeoutSec);
+    cli.set_read_timeout(timeoutSec);
+
+    httplib::MultipartFormDataItems items = {
+        { fieldName, fileContent, filename, "application/octet-stream" }
+    };
+
+    auto res = cli.Post(path, items);
+
+    if (res) {
+        result.status = res->status;
+        result.body = res->body;
+        result.success = (res->status >= 200 && res->status < 300);
+
+        if (result.success) {
+            QtLogger::WriteLog(QString("上传成功 [%1] 代码:%2").arg(path.c_str()).arg(res->status));
+        } else {
+            QtLogger::WriteLog(QString("上传服务端报错 [%1] 代码:%2").arg(path.c_str()).arg(res->status), enLogType::WARNING);
+        }
+    } else {
+        QtLogger::WriteLog(QString("上传连接失败 [%1]").arg(host.c_str()), enLogType::SERIOUS);
     }
 
     return result;

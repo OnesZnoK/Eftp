@@ -1,0 +1,46 @@
+{
+  "servers": {
+    "eftp": {
+      "baseUrl": "http://eftp.edianyun.com/api",
+      "apis": {
+        "queryDeviceInfo":              "/client/queryDeviceInfo",
+        "queryDeviceRouteInfo":         "/client/queryDeviceRouteInfo",
+        "queryDeviceTestInfo":          "/client/queryDeviceTestInfo",
+        "queryDeviceTestInfoForWareHouse": "/client/queryDeviceTestInfoForWareHouse",
+        "addMacAddr":                   "/client/addMacAddr",
+        "checkTestItemVersion":         "/client/checkTestItemVersion",
+        "cycleItemStart":               "/client/cycleItemStart",
+        "cycleItemEnd":                 "/client/cycleItemEnd",
+        "cycleItemReTest":              "/client/cycleItemReTest",
+        "queryCycleTestItemInfo":       "/client/queryCycleTestItemInfo",
+        "queryTestItemParam":           "/client/queryTestItemParam",
+        "reportCycleTestData":          "/client/reportCycleTestData",
+        "initStartOrEnd":               "/client/initStartOrEnd",
+        "cycleStageStartOrEnd":         "/client/cycleStageStartOrEnd",
+        "judgeCurrentCycleEnd":         "/client/judgeCurrentCycleEnd",
+        "addTestLog":                   "/client/addTestLog",
+        "addExtData":                   "/client/addExtData",
+        "closeDeviceCycle":             "/open/closeDeviceCycle",
+        "uploadFile":                   "/file/uploadFile",
+        "existExtData":                 "/client/existExtData",
+        "notCloseAlert":                "/client/notCloseAlert",
+        "queryClientDownloadInfo":      "/client/queryClientDownloadInfo"
+      }
+    }
+  },
+  "download": {
+    "localRoot": "C:\\Users\\Public\\Desktop\\EDYTest",
+    "tool7za": "C:\\Users\\Public\\Desktop\\EDYTest\\Tools\\7za.exe",
+    "maxRetry": 30,
+    "timeoutMs": 900000,
+    "extractTimeoutMs": 30000
+  },
+  "network": {
+    "pingTarget": "www.baidu.com",
+    "pingIntervalSec": 8
+  },
+  "environment": "product",
+  "log": {
+    "level": "debug"
+  }
+}

@@ -8,10 +8,6 @@ set(HEADERS
     resource.h
 )
 
-set(UI_FILES
-    MainWindow/MainWindow.ui
-)
-
 set(QRC_FILES
     resource/ComputerTest.qrc
 )
@@ -20,10 +16,12 @@ set(WIN_RC_FILES
     ComputerTest.rc
 )
 
+add_subdirectory(DeviceModel)
+add_subdirectory(SerApiModel)
+
 add_executable(${PROJECT_NAME} WIN32
     ${SOURCES}
     ${HEADERS}
-    ${UI_FILES}
     ${QRC_FILES}
     ${WIN_RC_FILES}
 )
@@ -45,6 +43,10 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
     QtLogger
+    DeviceModel
+    SerApiModel
+    ConfigManager
+    HttpCilent
     Qt5::Core
     Qt5::Network
     Qt5::Gui
