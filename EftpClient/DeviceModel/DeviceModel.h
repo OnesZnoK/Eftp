@@ -65,6 +65,8 @@ public:
      */
     void collectAsync();
 
+    QString executePowerShell(const QString& command);
+
 signals:
     /**
      * @brief 设备信息采集完成
