@@ -1,0 +1,4 @@
+#include <windows.h>
+
+// 图标
+1 ICON "../app/resource/icon/e.ico"

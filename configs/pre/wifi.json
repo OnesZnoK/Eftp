@@ -1,0 +1,16 @@
+{
+  "default": {
+    "ssid": "edianzu1",
+    "password": "1606edianzu8",
+    "description": "默认工厂网络(用于采集设备信息)"
+  },
+  "routeMapping": {
+    "85":  { "ssid": "e-taishiji",     "password": "edz123456", "description": "台式机工序专用WiFi" },
+    "220": { "ssid": "e-yitiji",       "password": "edz123456", "description": "一体机工序专用WiFi" },
+    "526": { "ssid": "e-shangxiajia",  "password": "edz123456", "description": "上下架工序专用WiFi" },
+    "536": { "ssid": "e-gongnengjian", "password": "edz123456", "description": "功能检工序专用WiFi" },
+    "546": { "ssid": "e-gongnengjian", "password": "edz123456", "description": "功能检工序专用WiFi" },
+    "586": { "ssid": "e-robot",        "password": "edz123456", "description": "机器人功能检测专用WiFi" },
+    "596": { "ssid": "e-robot",        "password": "edz123456", "description": "机器人外观检测专用WiFi" }
+  }
+}

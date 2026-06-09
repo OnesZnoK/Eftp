@@ -1,0 +1,43 @@
+<RCC>
+    <qresource prefix="/Eftp">
+        <file>NBStyleSheet.qss</file>
+        <file alias="icon/e.ico">icon/e.ico</file>
+        <file alias="image/done.png">image/done.png</file>
+        <file alias="image/downloading.png">image/downloading.png</file>
+        <file alias="image/exit.png">image/exit.png</file>
+        <file alias="image/exit2x.png">image/exit2x.png</file>
+        <file alias="image/fail.png">image/fail.png</file>
+        <file alias="image/initialdone.png">image/initialdone.png</file>
+        <file alias="image/intialFail.png">image/intialFail.png</file>
+        <file alias="image/intialFail2x.png">image/intialFail2x.png</file>
+        <file alias="image/intialdone2x.png">image/intialdone2x.png</file>
+        <file alias="image/loading.png">image/loading.png</file>
+        <file alias="image/mainExit.png">image/mainExit.png</file>
+        <file alias="image/mainExit2x.png">image/mainExit2x.png</file>
+        <file alias="image/max.png">image/max.png</file>
+        <file alias="image/max2x.png">image/max2x.png</file>
+        <file alias="image/min.png">image/min.png</file>
+        <file alias="image/min2x.png">image/min2x.png</file>
+        <file alias="image/none.png">image/none.png</file>
+        <file alias="image/none2x.png">image/none2x.png</file>
+        <file alias="image/retry.png">image/retry.png</file>
+        <file alias="image/running.png">image/running.png</file>
+        <file alias="image/running2x.png">image/running2x.png</file>
+        <file alias="image/success.png">image/success.png</file>
+        <file alias="image/success2x.png">image/success2x.png</file>
+        <file alias="image/sucess.png">image/sucess.png</file>
+        <file alias="image/testFail.png">image/testFail.png</file>
+        <file alias="image/testFail2x.png">image/testFail2x.png</file>
+        <file alias="image/testPass.png">image/testPass.png</file>
+        <file alias="image/testPass2x.png">image/testPass2x.png</file>
+        <file alias="image/testRuleFail.png">image/testRuleFail.png</file>
+        <file alias="image/testRuleFail2x.png">image/testRuleFail2x.png</file>
+        <file alias="image/testRulePass.png">image/testRulePass.png</file>
+        <file alias="image/testRulePass2x.png">image/testRulePass2x.png</file>
+        <file alias="image/title.png">image/title.png</file>
+        <file alias="image/title2x.png">image/title2x.png</file>
+        <file alias="image/unStartTest.png">image/unStartTest.png</file>
+        <file alias="image/waiting.png">image/waiting.png</file>
+        <file alias="gif/downloading.gif">gif/downloading.gif</file>
+    </qresource>
+</RCC>

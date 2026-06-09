@@ -1,43 +1,50 @@
-# Compiled Object files
-*.slo
-*.lo
-*.o
-*.obj
+# Build output
+Output/
+out/
+build/
 
-# Precompiled Headers
-*.gch
-*.pch
-
-# Compiled Dynamic libraries
-*.so
-*.dylib
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+*.cmake
+!CMakeLists.txt
+!CMakeSettings.json
 
 # Visual Studio
-*.vcxproj
+.vs/
 *.user
-*.filters
-*.orig
-*.aps
-*Makefile
-*.Debug
-*.Release
-/.vs
+*.suo
+*.ncb
+*.sdf
+*.opensdf
+*.VC.db
+*.VC.opendb
 
-# Fortran module files
-*.mod
-*.smod
+# Qt
+*.moc
+moc_*.cpp
+moc_*.h
+qrc_*.cpp
+ui_*.h
+*.pro.user
 
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-
-# Executables
+# Compiled
+*.obj
+*.o
 *.exe
-*.out
-*.app
+*.dll
+*.lib
+*.pdb
+*.ilk
+*.exp
 
-# Build directories
-/out/build
-/Output/Win32
-/build
+# Logs
+*.log
+log/
+
+# OS
+Thumbs.db
+Desktop.ini
+.DS_Store

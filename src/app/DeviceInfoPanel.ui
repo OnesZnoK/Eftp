@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>DeviceInfoPanel</class>
+ <widget class="QWidget" name="DeviceInfoPanel">
+  <property name="geometry">
+   <rect><x>0</x><y>0</y><width>800</width><height>80</height></rect>
+  </property>
+  <property name="styleSheet"><string notr="true">background-color:#f5f5f5; border-bottom:1px solid #ddd;</string></property>
+  <layout class="QVBoxLayout" name="mainLayout">
+   <property name="leftMargin"><number>10</number></property>
+   <property name="topMargin"><number>6</number></property>
+   <property name="rightMargin"><number>10</number></property>
+   <property name="bottomMargin"><number>6</number></property>
+   <property name="spacing"><number>4</number></property>
+
+   <!-- 第一行：SN | MAC -->
+   <item>
+    <layout class="QHBoxLayout" name="row1">
+     <item>
+      <widget class="QLabel" name="labelSn">
+       <property name="styleSheet"><string notr="true">font-size:13px; font-weight:bold;</string></property>
+       <property name="text"><string>SN: --</string></property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="spacer1a"><property name="orientation"><enum>Qt::Horizontal</enum></property><property name="sizeType"><enum>QSizePolicy::Fixed</enum></property><property name="sizeHint" stdset="0"><size><width>20</width><height>0</height></size></property></spacer>
+     </item>
+     <item>
+      <widget class="QLabel" name="labelMac">
+       <property name="styleSheet"><string notr="true">font-size:13px;</string></property>
+       <property name="text"><string>MAC: --</string></property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="spacer1b"><property name="orientation"><enum>Qt::Horizontal</enum></property></spacer>
+     </item>
+    </layout>
+   </item>
+
+   <!-- 第二行：机型 | 区域 | 工序 | 工单 -->
+   <item>
+    <layout class="QHBoxLayout" name="row2">
+     <item>
+      <widget class="QLabel" name="labelDeviceType">
+       <property name="styleSheet"><string notr="true">font-size:13px;</string></property>
+       <property name="text"><string>机型: --</string></property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="spacer2a"><property name="orientation"><enum>Qt::Horizontal</enum></property><property name="sizeType"><enum>QSizePolicy::Fixed</enum></property><property name="sizeHint" stdset="0"><size><width>15</width><height>0</height></size></property></spacer>
+     </item>
+     <item>
+      <widget class="QLabel" name="labelArea">
+       <property name="styleSheet"><string notr="true">font-size:13px;</string></property>
+       <property name="text"><string>区域: --</string></property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="spacer2b"><property name="orientation"><enum>Qt::Horizontal</enum></property><property name="sizeType"><enum>QSizePolicy::Fixed</enum></property><property name="sizeHint" stdset="0"><size><width>15</width><height>0</height></size></property></spacer>
+     </item>
+     <item>
+      <widget class="QLabel" name="labelWorkStation">
+       <property name="styleSheet"><string notr="true">font-size:13px;</string></property>
+       <property name="text"><string>工序: --</string></property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="spacer2c"><property name="orientation"><enum>Qt::Horizontal</enum></property><property name="sizeType"><enum>QSizePolicy::Fixed</enum></property><property name="sizeHint" stdset="0"><size><width>15</width><height>0</height></size></property></spacer>
+     </item>
+     <item>
+      <widget class="QLabel" name="labelWorkOrder">
+       <property name="styleSheet"><string notr="true">font-size:13px;</string></property>
+       <property name="text"><string>工单: --</string></property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="spacer2d"><property name="orientation"><enum>Qt::Horizontal</enum></property></spacer>
+     </item>
+    </layout>
+   </item>
+
+   <!-- 第三行：当前SKU | 目标SKU | 备注 -->
+   <item>
+    <layout class="QHBoxLayout" name="row3">
+     <item>
+      <widget class="QLabel" name="labelCurrentSKU">
+       <property name="styleSheet"><string notr="true">font-size:13px;</string></property>
+       <property name="text"><string>当前SKU: --</string></property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="spacer3a"><property name="orientation"><enum>Qt::Horizontal</enum></property><property name="sizeType"><enum>QSizePolicy::Fixed</enum></property><property name="sizeHint" stdset="0"><size><width>15</width><height>0</height></size></property></spacer>
+     </item>
+     <item>
+      <widget class="QLabel" name="labelAimSKU">
+       <property name="styleSheet"><string notr="true">font-size:13px;</string></property>
+       <property name="text"><string>目标SKU: --</string></property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="spacer3b"><property name="orientation"><enum>Qt::Horizontal</enum></property><property name="sizeType"><enum>QSizePolicy::Fixed</enum></property><property name="sizeHint" stdset="0"><size><width>15</width><height>0</height></size></property></spacer>
+     </item>
+     <item>
+      <widget class="QLabel" name="labelNotes">
+       <property name="styleSheet"><string notr="true">font-size:13px;</string></property>
+       <property name="text"><string>备注: --</string></property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="spacer3c"><property name="orientation"><enum>Qt::Horizontal</enum></property></spacer>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

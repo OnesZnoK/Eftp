@@ -1,0 +1,11 @@
+{
+  "servers": {
+    "eftp": {
+      "baseUrl": "http://eftp.edianyun.com/api",
+      "apis": {
+        "queryDeviceInfo": "/client/queryDeviceInfo",
+        "queryDeviceTestInfo": "/client/queryDeviceTestInfoForWareHouse"
+      }
+    }
+  }
+}

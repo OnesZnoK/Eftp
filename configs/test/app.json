@@ -1,0 +1,8 @@
+{
+  "servers": {
+    "eftp": {
+      "baseUrl": "http://test-eftp.edianyun.com/api"
+    }
+  },
+  "environment": "test"
+}

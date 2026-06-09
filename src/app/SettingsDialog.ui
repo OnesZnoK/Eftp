@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>SettingsDialog</class>
+ <widget class="QDialog" name="SettingsDialog">
+  <property name="geometry">
+   <rect><x>0</x><y>0</y><width>500</width><height>600</height></rect>
+  </property>
+  <property name="windowTitle"><string>设置</string></property>
+  <layout class="QVBoxLayout" name="mainLayout">
+   <property name="spacing"><number>12</number></property>
+   <property name="leftMargin"><number>20</number></property>
+   <property name="topMargin"><number>20</number></property>
+   <property name="rightMargin"><number>20</number></property>
+   <property name="bottomMargin"><number>20</number></property>
+
+   <!-- 当前环境 -->
+   <item>
+    <widget class="QGroupBox" name="groupEnv">
+     <property name="title"><string>当前环境</string></property>
+     <layout class="QFormLayout" name="envLayout">
+      <item row="0" column="0"><widget class="QLabel" name="labelEnvTitle"><property name="text"><string>环境：</string></property></widget></item>
+      <item row="0" column="1"><widget class="QComboBox" name="comboEnv"/></item>
+      <item row="1" column="0"><widget class="QLabel" name="labelServerTitle"><property name="text"><string>服务器：</string></property></widget></item>
+      <item row="1" column="1"><widget class="QLabel" name="labelServer"><property name="text"><string>--</string></property></widget></item>
+     </layout>
+    </widget>
+   </item>
+
+   <!-- 网络配置（只读） -->
+   <item>
+    <widget class="QGroupBox" name="groupNetwork">
+     <property name="title"><string>网络配置</string></property>
+     <layout class="QFormLayout" name="networkLayout">
+      <item row="0" column="0"><widget class="QLabel" name="labelPingTitle"><property name="text"><string>Ping目标：</string></property></widget></item>
+      <item row="0" column="1"><widget class="QLabel" name="labelPing"><property name="text"><string>--</string></property></widget></item>
+      <item row="1" column="0"><widget class="QLabel" name="labelIntervalTitle"><property name="text"><string>Ping间隔：</string></property></widget></item>
+      <item row="1" column="1"><widget class="QLabel" name="labelInterval"><property name="text"><string>--</string></property></widget></item>
+      <item row="2" column="0"><widget class="QLabel" name="labelThresholdTitle"><property name="text"><string>延迟阈值：</string></property></widget></item>
+      <item row="2" column="1"><widget class="QLabel" name="labelThreshold"><property name="text"><string>--</string></property></widget></item>
+     </layout>
+    </widget>
+   </item>
+
+   <!-- WiFi 配置（可编辑） -->
+   <item>
+    <widget class="QGroupBox" name="groupWifi">
+     <property name="title"><string>WiFi 配置</string></property>
+     <layout class="QVBoxLayout" name="wifiLayout">
+      <item>
+       <widget class="QLabel" name="labelDefaultWifiTitle">
+        <property name="text"><string>默认WiFi：</string></property>
+        <property name="styleSheet"><string notr="true">font-weight:bold;</string></property>
+       </widget>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="defaultWifiLayout">
+        <item>
+         <widget class="QLineEdit" name="editDefaultSsid">
+          <property name="placeholderText"><string>SSID</string></property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="editDefaultPassword">
+          <property name="placeholderText"><string>密码</string></property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QLabel" name="labelRouteWifiTitle">
+        <property name="text"><string>工序WiFi映射：</string></property>
+        <property name="styleSheet"><string notr="true">font-weight:bold;</string></property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QTableWidget" name="tableRouteWifi">
+        <property name="columnCount"><number>3</number></property>
+        <column><property name="text"><string>工序ID</string></property></column>
+        <column><property name="text"><string>SSID</string></property></column>
+        <column><property name="text"><string>密码</string></property></column>
+       </widget>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="wifiBtnLayout">
+        <item><spacer name="wifiSpacer"><property name="orientation"><enum>Qt::Horizontal</enum></property></spacer></item>
+        <item>
+         <widget class="QPushButton" name="btnAddRoute">
+          <property name="text"><string>添加</string></property>
+          <property name="minimumSize"><size><width>60</width><height>28</height></size></property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="btnDeleteRoute">
+          <property name="text"><string>删除</string></property>
+          <property name="minimumSize"><size><width>60</width><height>28</height></size></property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+
+   <!-- 下载配置（只读） -->
+   <item>
+    <widget class="QGroupBox" name="groupDownload">
+     <property name="title"><string>下载配置（只读）</string></property>
+     <layout class="QFormLayout" name="downloadLayout">
+      <item row="0" column="0"><widget class="QLabel" name="label7zaTitle"><property name="text"><string>7za路径：</string></property></widget></item>
+      <item row="0" column="1"><widget class="QLabel" name="label7za"><property name="text"><string>--</string></property></widget></item>
+      <item row="1" column="0"><widget class="QLabel" name="labelRetryTitle"><property name="text"><string>最大重试：</string></property></widget></item>
+      <item row="1" column="1"><widget class="QLabel" name="labelRetry"><property name="text"><string>--</string></property></widget></item>
+     </layout>
+    </widget>
+   </item>
+
+   <!-- 按钮 -->
+   <item>
+    <layout class="QHBoxLayout" name="btnLayout">
+     <item><spacer name="btnSpacer"><property name="orientation"><enum>Qt::Horizontal</enum></property></spacer></item>
+     <item>
+      <widget class="QPushButton" name="btnSave">
+       <property name="text"><string>保存</string></property>
+       <property name="minimumSize"><size><width>80</width><height>32</height></size></property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnCancel">
+       <property name="text"><string>取消</string></property>
+       <property name="minimumSize"><size><width>80</width><height>32</height></size></property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

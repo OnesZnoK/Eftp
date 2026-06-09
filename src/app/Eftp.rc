@@ -1,0 +1,4 @@
+#include <windows.h>
+
+// EXE 文件图标（在资源管理器中显示）
+1 ICON "resource/icon/e.ico"

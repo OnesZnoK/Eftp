@@ -1,0 +1,238 @@
+/* ═══════════════════════════════════════════
+   EFTP 现代风格样式表
+   ═══════════════════════════════════════════ */
+
+/* ── 主窗口 ── */
+QMainWindow#MainWindow {
+    background-color: #F0F2F5;
+}
+
+/* ── 标题栏 ── */
+QWidget#widgetTitle {
+    background-color: #FFFFFF;
+    border-bottom: 1px solid #E8E8E8;
+}
+
+/* ── 设备信息面板 ── */
+QWidget#widgetBaseInfo {
+    background-color: #FFFFFF;
+    border-radius: 4px;
+    border: 1px solid #E8E8E8;
+}
+
+QWidget#widgetBaseInfo QLabel {
+    background-color: transparent;
+    color: #333333;
+    font-size: 12px;
+}
+
+QWidget#widgetBaseInfo QLabel[labelTitle="true"] {
+    font-weight: bold;
+    color: #1890FF;
+}
+
+/* ── Tab 容器 ── */
+QTabWidget::pane {
+    border: 1px solid #E8E8E8;
+    background-color: #FFFFFF;
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+}
+
+/* ── Tab 栏（Material Design 风格）── */
+QTabBar::tab {
+    min-height: 52px;
+    padding: 8px 16px;
+    margin-right: 2px;
+    border: 1px solid #E0E0E0;
+    border-bottom: none;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    background-color: #FAFAFA;
+    font-weight: bold;
+    font-size: 13px;
+}
+
+QTabBar::tab:selected {
+    background-color: #FFFFFF;
+    border-bottom: 3px solid #1890FF;
+}
+
+QTabBar::tab:hover:!selected {
+    background-color: #F0F5FF;
+}
+
+QTabBar::tab:hover:!selected {
+    background-color: #F0F5FF;
+    color: #1890FF;
+}
+
+/* ── 按钮 ── */
+QPushButton {
+    background-color: #1890FF;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 4px;
+    padding: 6px 16px;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+QPushButton:hover {
+    background-color: #40A9FF;
+}
+
+QPushButton:pressed {
+    background-color: #096DD9;
+}
+
+QPushButton:disabled {
+    background-color: #D9D9D9;
+    color: #FFFFFF;
+}
+
+/* ── 文本输入 ── */
+QTextEdit, QLineEdit {
+    border: 1px solid #D9D9D9;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 13px;
+    background-color: #FFFFFF;
+}
+
+QTextEdit:focus, QLineEdit:focus {
+    border-color: #1890FF;
+}
+
+/* ── 树形视图（测试项网格）── */
+QTreeView {
+    border: 1px solid #E8E8E8;
+    background-color: #FFFFFF;
+    border-radius: 4px;
+}
+
+QTreeView::item {
+    padding: 0px;
+    border: none;
+}
+
+QTreeView::item:selected {
+    background-color: #E6F7FF;
+    color: #1890FF;
+}
+
+QTreeView::item:hover {
+    background-color: #F0F5FF;
+}
+
+/* ── 表格视图 ── */
+QTableView {
+    border: 1px solid #E8E8E8;
+    background-color: #FFFFFF;
+    alternate-background-color: #FAFAFA;
+    gridline-color: #F0F0F0;
+    border-radius: 4px;
+}
+
+QTableView::item:selected {
+    background-color: #E6F7FF;
+    color: #1890FF;
+}
+
+QHeaderView::section {
+    background-color: #FAFAFA;
+    border: none;
+    border-bottom: 1px solid #E8E8E8;
+    padding: 6px;
+    font-weight: bold;
+    color: #333333;
+}
+
+/* ── 滚动区域 ── */
+QScrollArea {
+    border: none;
+    background-color: transparent;
+}
+
+/* ── 滚动条 ── */
+QScrollBar:vertical {
+    background-color: #F0F2F5;
+    width: 8px;
+    border-radius: 4px;
+}
+
+QScrollBar::handle:vertical {
+    background-color: #C1C1C1;
+    border-radius: 4px;
+    min-height: 30px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background-color: #A8A8A8;
+}
+
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    height: 0;
+}
+
+QScrollBar:horizontal {
+    background-color: #F0F2F5;
+    height: 8px;
+    border-radius: 4px;
+}
+
+QScrollBar::handle:horizontal {
+    background-color: #C1C1C1;
+    border-radius: 4px;
+    min-width: 30px;
+}
+
+QScrollBar::handle:horizontal:hover {
+    background-color: #A8A8A8;
+}
+
+QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
+    width: 0;
+}
+
+/* ── Tips 区域 ── */
+QWidget#widgetTips {
+    background-color: #FFFFFF;
+    border: 1px solid #E8E8E8;
+    border-radius: 4px;
+}
+
+QWidget#widgetTips QLabel {
+    background-color: #FAFAFA;
+    border-right: 1px solid #E8E8E8;
+    color: #666666;
+    font-weight: bold;
+    font-size: 12px;
+}
+
+/* ── 工作站/工序 红色高亮 ── */
+QLabel[highlight="true"] {
+    color: #FF4D4F;
+    font-weight: bold;
+}
+
+/* ── 对话框 ── */
+QDialog {
+    background-color: #FFFFFF;
+}
+
+/* ── 分组框 ── */
+QGroupBox {
+    border: 1px solid #E8E8E8;
+    border-radius: 4px;
+    margin-top: 8px;
+    padding-top: 16px;
+    font-weight: bold;
+    color: #333333;
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    left: 12px;
+    padding: 0 6px;
+}

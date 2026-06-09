@@ -1,0 +1,8 @@
+{
+  "servers": {
+    "eftp": {
+      "baseUrl": "http://eftp.edianyun.com/api"
+    }
+  },
+  "environment": "product"
+}

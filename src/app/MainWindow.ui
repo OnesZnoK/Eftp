@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect><x>0</x><y>0</y><width>1271</width><height>736</height></rect>
+  </property>
+  <property name="windowTitle"><string>EFTP</string></property>
+  <property name="styleSheet"><string notr="true">QMainWindow#MainWindow { background-color:#F0F2F5; }</string></property>
+  <widget class="QWidget" name="centralWidget">
+   <property name="styleSheet"><string notr="true">background-color:#F0F2F5;</string></property>
+   <layout class="QVBoxLayout" name="mainLayout">
+    <property name="spacing"><number>10</number></property>
+    <property name="leftMargin"><number>1</number></property>
+    <property name="topMargin"><number>1</number></property>
+    <property name="rightMargin"><number>1</number></property>
+    <property name="bottomMargin"><number>1</number></property>
+    <!-- ═══ 标题栏 ═══ -->
+    <item>
+     <widget class="QWidget" name="widgetTitle" native="true">
+      <property name="minimumSize"><size><width>0</width><height>36</height></size></property>
+      <property name="maximumSize"><size><width>16777215</width><height>36</height></size></property>
+      <property name="styleSheet"><string notr="true">background-color:#FAFAFA;</string></property>
+      <layout class="QHBoxLayout" name="titleLayout">
+       <property name="leftMargin"><number>14</number></property>
+       <property name="rightMargin"><number>14</number></property>
+       <item>
+        <widget class="QLabel" name="labelLogo">
+         <property name="minimumSize"><size><width>78</width><height>24</height></size></property>
+         <property name="styleSheet"><string notr="true">border-image:url(:/Eftp/image/title2x.png);</string></property>
+         <property name="text"><string/></property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="spacer1"><property name="orientation"><enum>Qt::Horizontal</enum></property></spacer>
+       </item>
+       <item>
+        <widget class="QLabel" name="labelResult">
+         <property name="minimumSize"><size><width>20</width><height>20</height></size></property>
+         <property name="maximumSize"><size><width>20</width><height>20</height></size></property>
+         <property name="text"><string/></property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="labelTitleResult">
+         <property name="font"><font><pointsize>14</pointsize></font></property>
+         <property name="text"><string/></property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="spacer2"><property name="orientation"><enum>Qt::Horizontal</enum></property></spacer>
+       </item>
+       <item>
+        <widget class="QLabel" name="labelNetwork">
+         <property name="styleSheet"><string notr="true">font-size:12px; color:#666; padding:0 8px;</string></property>
+         <property name="text"><string>--</string></property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+
+    <!-- ═══ 设备信息面板 ═══ -->
+    <item>
+     <widget class="QWidget" name="widgetBaseInfo" native="true">
+      <property name="styleSheet"><string notr="true">QWidget#widgetBaseInfo { background-color:rgb(255,255,255); } QLabel { background-color:rgb(255,255,255); }</string></property>
+      <layout class="QGridLayout" name="gridInfo">
+       <property name="leftMargin"><number>8</number></property>
+       <property name="rightMargin"><number>8</number></property>
+       <property name="verticalSpacing"><number>2</number></property>
+       <property name="horizontalSpacing"><number>8</number></property>
+
+       <!-- 第0行：标题 -->
+       <item row="0" column="0" colspan="2">
+        <widget class="QLabel" name="labelInfoTitle">
+         <property name="minimumSize"><size><width>0</width><height>22</height></size></property>
+         <property name="font"><font><bold>true</bold></font></property>
+         <property name="styleSheet"><string notr="true">font-size:14px;</string></property>
+         <property name="text"><string>基本信息</string></property>
+        </widget>
+       </item>
+
+       <!-- 第1行：SN | 机型 | 当前工作站 | 厂区 -->
+       <item row="1" column="0">
+        <widget class="QLabel" name="labelSnTitle">
+         <property name="minimumSize"><size><width>80</width><height>20</height></size></property>
+         <property name="text"><string>SN：</string></property>
+         <property name="alignment"><set>Qt::AlignRight|Qt::AlignVCenter</set></property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QLabel" name="labelSn">
+         <property name="minimumSize"><size><width>100</width><height>0</height></size></property>
+         <property name="text"><string>--</string></property>
+        </widget>
+       </item>
+       <item row="1" column="3">
+        <widget class="QLabel" name="labelDeviceTypeTitle">
+         <property name="minimumSize"><size><width>100</width><height>0</height></size></property>
+         <property name="text"><string>机型：</string></property>
+         <property name="alignment"><set>Qt::AlignRight|Qt::AlignVCenter</set></property>
+        </widget>
+       </item>
+       <item row="1" column="4">
+        <widget class="QLabel" name="labelDeviceType">
+         <property name="maximumSize"><size><width>16777215</width><height>20</height></size></property>
+         <property name="text"><string>--</string></property>
+         <property name="wordWrap"><bool>true</bool></property>
+        </widget>
+       </item>
+       <item row="1" column="6">
+        <widget class="QLabel" name="labelStationTitle">
+         <property name="minimumSize"><size><width>150</width><height>0</height></size></property>
+         <property name="styleSheet"><string notr="true">font-weight:bold;</string></property>
+         <property name="text"><string>当前工作站：</string></property>
+         <property name="alignment"><set>Qt::AlignRight|Qt::AlignVCenter</set></property>
+        </widget>
+       </item>
+       <item row="1" column="7">
+        <widget class="QLabel" name="labelWorkStation">
+         <property name="maximumSize"><size><width>16777215</width><height>20</height></size></property>
+         <property name="styleSheet"><string notr="true">color:rgb(255,0,0);</string></property>
+         <property name="text"><string>--</string></property>
+        </widget>
+       </item>
+
+       <!-- 第2行：当前SKU | 工单号 | 厂区 -->
+       <item row="2" column="0">
+        <widget class="QLabel" name="labelSkuTitle">
+         <property name="minimumSize"><size><width>80</width><height>0</height></size></property>
+         <property name="text"><string>当前SKU：</string></property>
+         <property name="alignment"><set>Qt::AlignRight|Qt::AlignVCenter</set></property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QLabel" name="labelCurrentSKU">
+         <property name="minimumSize"><size><width>100</width><height>0</height></size></property>
+         <property name="text"><string>--</string></property>
+        </widget>
+       </item>
+       <item row="2" column="3">
+        <widget class="QLabel" name="labelWorkOrderTitle">
+         <property name="minimumSize"><size><width>100</width><height>0</height></size></property>
+         <property name="text"><string>工单号：</string></property>
+         <property name="alignment"><set>Qt::AlignRight|Qt::AlignVCenter</set></property>
+        </widget>
+       </item>
+       <item row="2" column="4">
+        <widget class="QLabel" name="labelWorkOrder">
+         <property name="maximumSize"><size><width>16777215</width><height>20</height></size></property>
+         <property name="text"><string>--</string></property>
+         <property name="wordWrap"><bool>true</bool></property>
+        </widget>
+       </item>
+       <item row="2" column="6">
+        <widget class="QLabel" name="labelAreaTitle">
+         <property name="minimumSize"><size><width>150</width><height>0</height></size></property>
+         <property name="styleSheet"><string notr="true">font-weight:bold;</string></property>
+         <property name="text"><string>厂区：</string></property>
+         <property name="alignment"><set>Qt::AlignRight|Qt::AlignVCenter</set></property>
+        </widget>
+       </item>
+       <item row="2" column="7">
+        <widget class="QLabel" name="labelArea">
+         <property name="minimumSize"><size><width>100</width><height>0</height></size></property>
+         <property name="maximumSize"><size><width>16777215</width><height>20</height></size></property>
+         <property name="text"><string>--</string></property>
+        </widget>
+       </item>
+
+       <!-- 第3行：目标SKU | 工序 -->
+       <item row="3" column="0">
+        <widget class="QLabel" name="labelAimSkuTitle">
+         <property name="minimumSize"><size><width>80</width><height>20</height></size></property>
+         <property name="text"><string>目标SKU：</string></property>
+         <property name="alignment"><set>Qt::AlignRight|Qt::AlignVCenter</set></property>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <widget class="QLabel" name="labelAimSKU">
+         <property name="minimumSize"><size><width>100</width><height>0</height></size></property>
+         <property name="text"><string>--</string></property>
+        </widget>
+       </item>
+       <item row="3" column="3">
+        <widget class="QLabel" name="labelProcessTitle">
+         <property name="text"><string>工序：</string></property>
+         <property name="alignment"><set>Qt::AlignRight|Qt::AlignVCenter</set></property>
+        </widget>
+       </item>
+       <item row="3" column="4">
+        <widget class="QLabel" name="labelProcessName">
+         <property name="styleSheet"><string notr="true">color:rgb(255,0,0);</string></property>
+         <property name="text"><string>--</string></property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+
+    <!-- ═══ Tab 区域 ═══ -->
+    <item>
+     <widget class="EftpTabWidget" name="tabWidget">
+     </widget>
+    </item>
+
+    <!-- ═══ Tips 区域 ═══ -->
+    <item>
+     <widget class="QWidget" name="widgetTips" native="true">
+      <property name="minimumSize"><size><width>0</width><height>36</height></size></property>
+      <property name="maximumSize"><size><width>16777215</width><height>36</height></size></property>
+      <property name="styleSheet"><string notr="true">border:1px solid #E8E8E8; background-color:white;</string></property>
+      <layout class="QHBoxLayout" name="tipsLayout">
+       <property name="leftMargin"><number>8</number></property>
+       <property name="rightMargin"><number>8</number></property>
+       <property name="topMargin"><number>4</number></property>
+       <property name="bottomMargin"><number>4</number></property>
+       <item>
+        <widget class="QLabel" name="labelTipsTitle">
+         <property name="minimumSize"><size><width>40</width><height>0</height></size></property>
+         <property name="font"><font><pointsize>11</pointsize></font></property>
+         <property name="styleSheet"><string notr="true">border:none; color:#666;</string></property>
+         <property name="text"><string>Tips:</string></property>
+         <property name="alignment"><set>Qt::AlignVCenter</set></property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QTextEdit" name="textEditTips">
+         <property name="font"><font><pointsize>11</pointsize></font></property>
+         <property name="styleSheet"><string notr="true">border:none; background-color:transparent;</string></property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+
+
+   </layout>
+  </widget>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>EftpTabWidget</class>
+   <extends>QTabWidget</extends>
+   <header>EftpTabWidget.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="resource/Eftp.qrc"/>
+ </resources>
+ <connections/>
+</ui>

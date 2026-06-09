@@ -13,7 +13,7 @@
       "variables": [
         {
           "name": "CMAKE_PREFIX_PATH",
-          "value": "E:/Qt/Qt5.12.12/5.12.12/msvc2017",
+          "value": "C:/Qt/Qt5.12.12/5.12.12/msvc2017",
           "type": "PATH"
         }
       ]
@@ -31,7 +31,7 @@
       "variables": [
         {
           "name": "CMAKE_PREFIX_PATH",
-          "value": "E:/Qt/Qt5.12.12/5.12.12/msvc2017",
+          "value": "C:/Qt/Qt5.12.12/5.12.12/msvc2017",
           "type": "PATH"
         }
       ]
