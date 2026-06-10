@@ -203,10 +203,10 @@ void MainWindow::onDeviceInfoReady(const DeviceInfo& info)
         std::string sn = info.deviceSn.toStdString();
 
         QtLogger::WriteLog("MainWindow: 查询设备信息 SN=" + info.deviceSn);
-        DeviceBaseDataInfo devInfo = api.queryDeviceInfo(sn);
+        DeviceBaseDataInfo devInfo = api.queryDeviceInfo(sn, info.deviceMac.toStdString(), info.baseboardSn.toStdString());
 
         // 查询工序信息（routeProcessesName 值不同）
-        DeviceRouteDataInfo routeInfo = api.queryDeviceRouteInfo(sn);
+        DeviceRouteDataInfo routeInfo = api.queryDeviceRouteInfo(sn, info.deviceMac.toStdString());
 
         // 根据工序连接对应 WiFi
         QMetaObject::invokeMethod(this, [this, routeInfo]() {

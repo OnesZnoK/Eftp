@@ -70,10 +70,16 @@ std::string SerApiModel::buildQueryString(
 
 // ── 查询类 ──
 
-DeviceBaseDataInfo SerApiModel::queryDeviceInfo(const std::string& sn)
+DeviceBaseDataInfo SerApiModel::queryDeviceInfo(const std::string& sn,
+                                                const std::string& mac,
+                                                const std::string& mainBoardSn)
 {
     DeviceBaseDataInfo info;
-    ApiResponse resp = doGet("queryDeviceInfo", {{"sn", sn}});
+    ApiResponse resp = doGet("queryDeviceInfo", {
+        {"sn", sn},
+        {"mac", mac},
+        {"mainBoardSn", mainBoardSn}
+    });
     if (!resp.success || !resp.data.is_object()) {
         QtLogger::WriteLog("queryDeviceInfo 失败: " + QString::fromStdString(resp.message),
                            enLogType::WARNING);
@@ -94,10 +100,14 @@ DeviceBaseDataInfo SerApiModel::queryDeviceInfo(const std::string& sn)
     return info;
 }
 
-DeviceRouteDataInfo SerApiModel::queryDeviceRouteInfo(const std::string& sn)
+DeviceRouteDataInfo SerApiModel::queryDeviceRouteInfo(const std::string& sn,
+                                                      const std::string& mac)
 {
     DeviceRouteDataInfo info;
-    ApiResponse resp = doGet("queryDeviceRouteInfo", {{"sn", sn}});
+    ApiResponse resp = doGet("queryDeviceRouteInfo", {
+        {"sn", sn},
+        {"mac", mac}
+    });
     if (!resp.success || !resp.data.is_object()) {
         QtLogger::WriteLog("queryDeviceRouteInfo 失败: " + QString::fromStdString(resp.message),
                            enLogType::WARNING);

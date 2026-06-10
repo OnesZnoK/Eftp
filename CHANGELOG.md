@@ -49,3 +49,13 @@
 - DumpUploader — 合并到 DownloadManager
 - VersionChecker — 合并到 TestOrchestrator
 
+---
+
+## 2026-06-10
+
+### API 参数完善
+- `queryDeviceInfo` 增加 `mac` 和 `mainBoardSn` 参数（与原项目一致）
+- `queryDeviceRouteInfo` 增加 `mac` 参数
+- MainWindow 调用时传入完整参数
+
+

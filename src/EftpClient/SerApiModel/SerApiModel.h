@@ -86,13 +86,17 @@ public:
      * @brief 查询设备基础信息
      * @param sn 设备序列号
      */
-    DeviceBaseDataInfo queryDeviceInfo(const std::string& sn);
+    DeviceBaseDataInfo queryDeviceInfo(const std::string& sn,
+                                      const std::string& mac = "",
+                                      const std::string& mainBoardSn = "");
 
     /**
      * @brief 查询设备工序路由
      * @param sn 设备序列号
+     * @param mac MAC地址
      */
-    DeviceRouteDataInfo queryDeviceRouteInfo(const std::string& sn);
+    DeviceRouteDataInfo queryDeviceRouteInfo(const std::string& sn,
+                                             const std::string& mac = "");
 
     /**
      * @brief 查询设备测试计划（标准模式）
