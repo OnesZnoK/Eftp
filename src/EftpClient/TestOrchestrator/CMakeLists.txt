@@ -1,17 +1,11 @@
 # TestOrchestrator — 测试流程状态机（SHARED DLL）
 # SHARED 理由：测试流程可能因产品线不同而需要替换
 # TODO: 待实现
-add_library(TestOrchestrator SHARED
+add_dll_library(TestOrchestrator dll/modules
     TestOrchestrator.h
     TestOrchestrator.cpp
 )
-
-set_target_properties(TestOrchestrator PROPERTIES
-    DEBUG_POSTFIX "d"
-    DEFINE_SYMBOL TESTORCHESTRATOR_LIBRARY
-    LIBRARY_OUTPUT_DIRECTORY "${OUTPUT_BIN_DIR}/dll/modules"
-    RUNTIME_OUTPUT_DIRECTORY "${OUTPUT_BIN_DIR}/dll/modules"
-)
+target_compile_definitions(TestOrchestrator PRIVATE TESTORCHESTRATOR_LIBRARY)
 
 target_link_libraries(TestOrchestrator PRIVATE
     SerApiModel

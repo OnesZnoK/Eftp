@@ -1,17 +1,11 @@
 # DownloadManager — 文件传输管理器（下载/上传/Dump）— SHARED DLL
 find_package(OpenSSL REQUIRED)
 
-add_library(DownloadManager SHARED
+add_dll_library(DownloadManager dll/core
     DownloadManager.h
     DownloadManager.cpp
 )
-
-set_target_properties(DownloadManager PROPERTIES
-    DEBUG_POSTFIX "d"
-    DEFINE_SYMBOL DOWNLOADMANAGER_LIBRARY
-    LIBRARY_OUTPUT_DIRECTORY "${OUTPUT_BIN_DIR}/dll/core"
-    RUNTIME_OUTPUT_DIRECTORY "${OUTPUT_BIN_DIR}/dll/core"
-)
+target_compile_definitions(DownloadManager PRIVATE DOWNLOADMANAGER_LIBRARY)
 
 target_link_libraries(DownloadManager PRIVATE
     HttpClient

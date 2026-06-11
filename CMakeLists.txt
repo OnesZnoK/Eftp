@@ -12,7 +12,7 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 
 if(MSVC)
-    add_compile_options(/utf-8 /MP /W3 /nologo)
+    add_compile_options(/utf-8 /MP /W3 /EHsc /nologo)
     set(CMAKE_SKIP_PREPROCESSED_SOURCE_RULES ON)
     set(CMAKE_SKIP_ASSEMBLY_SOURCE_RULES ON)
 endif()
@@ -23,6 +23,22 @@ set(OUTPUT_BIN_DIR "${CMAKE_SOURCE_DIR}/Output/Win32/Bin")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${OUTPUT_BIN_DIR})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${OUTPUT_BIN_DIR})
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/out/lib")  # .lib .exp 中间文件
+
+# ============================================================
+# 工具函数：创建 SHARED DLL 并指定输出子目录
+# ============================================================
+# 用法：add_dll_library(DeviceModel dll/modules DeviceModel.h DeviceModel.cpp)
+#   第1个参数：目标名
+#   第2个参数：相对于 OUTPUT_BIN_DIR 的子目录（如 dll/core、dll/modules）
+#   后续参数：源文件
+function(add_dll_library name subdir)
+    add_library(${name} SHARED ${ARGN})
+    set_target_properties(${name} PROPERTIES
+        DEBUG_POSTFIX "d"
+        LIBRARY_OUTPUT_DIRECTORY "${OUTPUT_BIN_DIR}/${subdir}"
+        RUNTIME_OUTPUT_DIRECTORY "${OUTPUT_BIN_DIR}/${subdir}"
+    )
+endfunction()
 
 # ============================================================
 # 查找 Qt5

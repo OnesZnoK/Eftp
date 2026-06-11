@@ -1,16 +1,10 @@
 # ConfigManager — 配置管理单例（SHARED DLL）
 # 依赖：JsonHpp（JSON解析）
-add_library(ConfigManager SHARED
+add_dll_library(ConfigManager dll/core
     ConfigManager.h
     ConfigManager.cpp
 )
-
-set_target_properties(ConfigManager PROPERTIES
-    DEBUG_POSTFIX "d"
-    DEFINE_SYMBOL CONFIGMANAGER_LIBRARY
-    LIBRARY_OUTPUT_DIRECTORY "${OUTPUT_BIN_DIR}/dll/core"
-    RUNTIME_OUTPUT_DIRECTORY "${OUTPUT_BIN_DIR}/dll/core"
-)
+target_compile_definitions(ConfigManager PRIVATE CONFIGMANAGER_LIBRARY)
 
 target_link_libraries(ConfigManager PUBLIC
     JsonHpp

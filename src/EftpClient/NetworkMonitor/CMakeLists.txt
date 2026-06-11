@@ -1,16 +1,10 @@
 # NetworkMonitor — 网络监控模块（SHARED DLL）
 # 定时 ping 检测 + WiFi 自动切换
-add_library(NetworkMonitor SHARED
+add_dll_library(NetworkMonitor dll/modules
     NetworkMonitor.h
     NetworkMonitor.cpp
 )
-
-set_target_properties(NetworkMonitor PROPERTIES
-    DEBUG_POSTFIX "d"
-    DEFINE_SYMBOL NETWORKMONITOR_LIBRARY
-    LIBRARY_OUTPUT_DIRECTORY "${OUTPUT_BIN_DIR}/dll/modules"
-    RUNTIME_OUTPUT_DIRECTORY "${OUTPUT_BIN_DIR}/dll/modules"
-)
+target_compile_definitions(NetworkMonitor PRIVATE NETWORKMONITOR_LIBRARY)
 
 target_link_libraries(NetworkMonitor PRIVATE
     ConfigManager

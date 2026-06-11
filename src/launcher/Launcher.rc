@@ -2,3 +2,6 @@
 
 // 图标
 1 ICON "../app/resource/icon/e.ico"
+
+// 管理员权限 UAC Manifest
+1 RT_MANIFEST "Launcher.manifest"

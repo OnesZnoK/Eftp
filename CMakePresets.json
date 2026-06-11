@@ -3,20 +3,33 @@
   "configurePresets": [
     {
       "hidden": true,
-      "name": "Qt",
-      "cacheVariables": {
-        "CMAKE_PREFIX_PATH": "$env{QTDIR}"
+      "name": "Qt-Base",
+      "generator": "Ninja",
+      "architecture": {
+        "strategy": "external",
+        "value": "x86"
       },
-      "vendor": {
-        "qt-project.org/Qt": {
-          "checksum": "wVa86FgEkvdCTVp1/nxvrkaemJc="
-        }
+      "cacheVariables": {
+        "CMAKE_PREFIX_PATH": "C:/Qt/Qt5.12.12/5.12.12/msvc2017"
+      }
+    },
+    {
+      "name": "Qt-Debug",
+      "inherits": "Qt-Base",
+      "displayName": "Qt Debug (x86)",
+      "binaryDir": "${sourceDir}/out/build/debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "Qt-Release",
+      "inherits": "Qt-Base",
+      "displayName": "Qt Release (x86)",
+      "binaryDir": "${sourceDir}/out/build/release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
       }
     }
-  ],
-  "vendor": {
-    "qt-project.org/Presets": {
-      "checksum": "67SmY24ZeVbebyKD0fGfIzb/bGI="
-    }
-  }
+  ]
 }

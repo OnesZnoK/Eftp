@@ -1,17 +1,11 @@
 # HttpClient — HTTP 客户端库（SHARED DLL）
 # 依赖：QtLogger（日志）、cpp-httplib（HTTP）、OpenSSL（HTTPS）
 
-add_library(HttpClient SHARED
+add_dll_library(HttpClient dll/core
     HttpClient.h
     HttpClient.cpp
 )
-
-set_target_properties(HttpClient PROPERTIES
-    DEBUG_POSTFIX "d"
-    DEFINE_SYMBOL HTTPCLIENT_LIBRARY
-    LIBRARY_OUTPUT_DIRECTORY "${OUTPUT_BIN_DIR}/dll/core"
-    RUNTIME_OUTPUT_DIRECTORY "${OUTPUT_BIN_DIR}/dll/core"
-)
+target_compile_definitions(HttpClient PRIVATE HTTPCLIENT_LIBRARY)
 
 # OpenSSL — 直接使用 vendored 路径
 set(OPENSSL_DIR ${CMAKE_SOURCE_DIR}/third_party/openssl)
