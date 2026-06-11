@@ -48,23 +48,97 @@ void TestOrchestrator::start(int stageIndex)
     }
 
     m_currentStage = stageIndex;
-    m_currentItem = 0;
     m_currentStep = Step::Idle;
+
+    // 找到第一个未完成的测试项（断点续测）
+    const auto& stage = m_plan.stages[m_currentStage];
+    m_currentItem = 0;
+    for (int i = 0; i < (int)stage.items.size(); i++) {
+        if (stage.items[i].testResult == 0) {  // 0=未测试
+            m_currentItem = i;
+            break;
+        }
+    }
 
     // 启动后台版本检查（测试开始时启动，每 5 分钟轮询一次）
     startVersionCheck(300000);
 
     emit testStarted();
-    QtLogger::WriteLog(QString("TestOrchestrator: 启动测试，阶段 %1/%2")
-        .arg(m_currentStage + 1).arg(m_plan.stages.size()));
+    QtLogger::WriteLog(QString("TestOrchestrator: 启动测试，阶段 %1/%2，从第 %3 项开始")
+        .arg(m_currentStage + 1).arg(m_plan.stages.size()).arg(m_currentItem + 1));
+
+    // 上报阶段开始
+    int stageId = m_plan.stages[m_currentStage].stageId;
+    QtConcurrent::run([stageId]() {
+        SerApiModel api;
+        api.cycleStageStartOrEnd(stageId, "start");
+    });
 
     // 通知当前阶段开始
     emit testStageStarted(m_currentStage,
         QString::fromStdString(m_plan.stages[m_currentStage].stageName));
 
-    // 直接检查第一个测试项版本（不经过 doNextItem，避免跳过 item 0）
+    // 直接检查第一个未完成测试项版本
     m_currentStep = Step::CheckVersion;
     executeCurrentStep();
+}
+
+void TestOrchestrator::retest(int cycleItemId)
+{
+    QtLogger::WriteLog(QString("TestOrchestrator: 重测请求 cycleItemId=%1").arg(cycleItemId));
+
+    // 1. 调用 cycleItemReTest API 重置测试项状态
+    QtConcurrent::run([this, cycleItemId]() {
+        SerApiModel api;
+        bool ok = api.cycleItemReTest(cycleItemId);
+        if (!ok) {
+            QtLogger::WriteLog(QString("TestOrchestrator: cycleItemReTest 失败 cycleItemId=%1").arg(cycleItemId));
+            emit testError("重测请求失败");
+            return;
+        }
+        QtLogger::WriteLog(QString("TestOrchestrator: cycleItemReTest 成功 cycleItemId=%1").arg(cycleItemId));
+
+        // 2. 查询测试项详情获取程序路径
+        TestItemResult item = api.queryCycleTestItemInfo(cycleItemId);
+        if (item.callHref.empty()) {
+            QtLogger::WriteLog("TestOrchestrator: 重测项无程序路径");
+            emit testError("重测项无程序路径");
+            return;
+        }
+
+        // 3. 找到该测试项在计划中的阶段和索引
+        int foundStage = -1, foundItem = -1;
+        for (int s = 0; s < (int)m_plan.stages.size(); s++) {
+            for (int i = 0; i < (int)m_plan.stages[s].items.size(); i++) {
+                if (m_plan.stages[s].items[i].cycleItemId == cycleItemId) {
+                    foundStage = s;
+                    foundItem = i;
+                    break;
+                }
+            }
+            if (foundStage >= 0) break;
+        }
+
+        if (foundStage < 0) {
+            QtLogger::WriteLog("TestOrchestrator: 重测项不在测试计划中");
+            emit testError("重测项不在测试计划中");
+            return;
+        }
+
+        // 4. 回到主线程，设置位置并执行
+        QMetaObject::invokeMethod(this, [this, foundStage, foundItem, item]() {
+            m_currentStage = foundStage;
+            m_currentItem = foundItem;
+            m_currentCallHref = item.callHref;
+            m_currentExtractPath = item.extractHref;
+            m_currentStep = Step::RunProgram;
+
+            emit testItemStarted(m_currentStage, m_currentItem,
+                QString::fromStdString(m_plan.stages[m_currentStage].items[m_currentItem].itemName));
+
+            executeCurrentStep();
+        }, Qt::QueuedConnection);
+    });
 }
 
 /**
@@ -197,6 +271,7 @@ void TestOrchestrator::onVersionCheckResult(bool needUpdate, const QString& call
     if (needUpdate) {
         // 需要下载
         QtLogger::WriteLog("TestOrchestrator: 版本需要更新，请求下载 " + itemName);
+        emit showTips(QString("版本不匹配，正在下载: %1").arg(itemName));
         m_currentRequestId = ++m_requestIdCounter;
         m_currentStep = Step::Download;
         emit requestDownload(m_currentRequestId, downloadUrl, extractPath);
@@ -331,15 +406,27 @@ void TestOrchestrator::doNextItem()
         return;
     }
 
-    // 当前阶段完成
+    // 当前阶段完成 — 上报阶段结束
     QtLogger::WriteLog(QString("TestOrchestrator: 阶段 %1 完成")
         .arg(QString::fromStdString(stage.stageName)));
+    int finishedStageId = stage.stageId;
+    QtConcurrent::run([finishedStageId]() {
+        SerApiModel api;
+        api.cycleStageStartOrEnd(finishedStageId, "end");
+    });
     emit testStageCompleted(m_currentStage, true);
 
     // 进入下一个阶段
     m_currentStage++;
     if (m_currentStage < (int)m_plan.stages.size()) {
         m_currentItem = 0;
+
+        // 上报新阶段开始
+        int newStageId = m_plan.stages[m_currentStage].stageId;
+        QtConcurrent::run([newStageId]() {
+            SerApiModel api;
+            api.cycleStageStartOrEnd(newStageId, "start");
+        });
 
         emit testStageStarted(m_currentStage,
             QString::fromStdString(m_plan.stages[m_currentStage].stageName));
@@ -422,8 +509,9 @@ void TestOrchestrator::checkBackgroundVersions()
 
             if (ver.needUpdate) {
                 outdatedCount++;
-                QtLogger::WriteLog(QString("TestOrchestrator: %1 版本过旧，请求下载")
-                    .arg(QString::fromStdString(item.itemName)));
+                QString name = QString::fromStdString(item.itemName);
+                QtLogger::WriteLog(QString("TestOrchestrator: %1 版本过旧，请求下载").arg(name));
+                emit showTips(QString("后台检测到版本更新: %1").arg(name));
 
                 int requestId = ++m_requestIdCounter;
                 emit requestDownload(requestId,

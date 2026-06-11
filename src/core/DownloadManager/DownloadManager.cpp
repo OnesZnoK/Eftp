@@ -98,6 +98,13 @@ bool DownloadManager::downloadFile(const QString& url, const QString& savePath)
         QNetworkRequest request{QUrl{url}};
         QNetworkReply* reply = m_networkMgr.get(request);
 
+        // 下载进度 → 发射信号更新 UI
+        QObject::connect(reply, &QNetworkReply::downloadProgress, this,
+            [this, url](qint64 bytesReceived, qint64 bytesTotal) {
+            QtLogger::WriteLog(QString("DownloadManager: 进度 %1/%2").arg(bytesReceived).arg(bytesTotal));
+            emit downloadProgress(url, bytesReceived, bytesTotal);
+        });
+
         // 每收到数据就重置计时器
         progressTimer.setSingleShot(true);
         QObject::connect(reply, &QNetworkReply::readyRead, &progressTimer, [&]() {

@@ -81,6 +81,12 @@ public:
     void start(int stageIndex = 0);
 
     /**
+     * @brief 重测指定测试项
+     * @param cycleItemId 测试项ID
+     */
+    void retest(int cycleItemId);
+
+    /**
      * @brief 启动后台版本检查定时器
      * @param intervalMs 检查间隔（毫秒），默认 5 分钟
      */
@@ -122,6 +128,7 @@ signals:
     void testStageCompleted(int stageIndex, bool success);
     void allTestsCompleted(bool success);
     void testError(const QString& errorMsg);
+    void showTips(const QString& message);  ///< 显示提示信息（MainWindow 更新 UI）
 
     /** @brief 内部信号：版本检查结果（跨线程回调） */
     void versionCheckResult(bool needUpdate, const QString& callHref,

@@ -5,7 +5,7 @@
 
 // 重试参数
 constexpr int DEFAULT_TIMEOUT_SEC = 10;
-constexpr int RETRY_INTERVAL_MS = 3000;  // 所有请求统一 3 秒重试
+constexpr int RETRY_INTERVAL_MS = 5000;  // 所有请求统一 5 秒重试
 
 bool HttpClient::ParseFullUrl(const std::string& fullUrl, std::string& host, std::string& path)
 {
@@ -75,9 +75,9 @@ HttpResult HttpClient::PostRawJson(const std::string& fullUrl, const std::string
 }
 
 /**
- * @brief GET 请求（无限重试，每 3 秒重试）
+ * @brief GET 请求（无限重试，每 5 秒重试）
  */
-HttpResult HttpClient::GetRaw(const std::string& fullUrl, int timeoutSec)
+HttpResult HttpClient::GetRaw(const std::string& fullUrl, int timeoutSec, RetryCallback onRetry)
 {
     HttpResult result;
     std::string host, path;
@@ -115,7 +115,13 @@ HttpResult HttpClient::GetRaw(const std::string& fullUrl, int timeoutSec)
             }
         }
 
-        QtLogger::WriteLog(QString("GET失败，3秒后重试 (第 %1 次)").arg(retryCount));
+        QtLogger::WriteLog(QString("GET失败，5秒后重试 (第 %1 次)").arg(retryCount));
+
+        // 回调通知 UI
+        if (onRetry) {
+            onRetry(retryCount, fullUrl);
+        }
+
         QEventLoop waitLoop;
         QTimer::singleShot(RETRY_INTERVAL_MS, &waitLoop, &QEventLoop::quit);
         waitLoop.exec();

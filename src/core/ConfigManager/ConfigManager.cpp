@@ -141,7 +141,13 @@ std::string ConfigManager::pingTarget() const
 int ConfigManager::pingIntervalSec() const
 {
     auto net = m_app.value("network", json::object());
-    return net.value("pingIntervalSec", 8);
+    return net.value("pingIntervalSec", 3);
+}
+
+int ConfigManager::failThreshold() const
+{
+    auto net = m_app.value("network", json::object());
+    return net.value("failThreshold", 5);
 }
 
 int ConfigManager::latencyThresholdMs() const

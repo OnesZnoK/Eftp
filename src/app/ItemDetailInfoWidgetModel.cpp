@@ -16,7 +16,7 @@ void ItemDetailInfoWidgetModel::setResults(const QList<TestDeviceCycleItemResult
     for (const auto& r : results) {
         RowData row;
         row.ruleName = r.ruleName;
-        row.result = (r.result == 0) ? "通过" : (r.result == 1) ? "失败" : "未知";
+        row.result = (r.result == 1) ? "通过" : (r.result == 0) ? "失败" : "未知";
         row.errorInfo = r.errorInfo;
         row.testStandard = r.testStandard;
         m_rows.append(row);

@@ -54,6 +54,9 @@ void InitialPage::setInitInfo(const TestDeviceInitInfoVO& initInfo)
     }
 
     ui.labelProgress->setText(QString("共 %1 个测试程序").arg(initInfo.testItemVOList.size()));
+
+    // 自动触发初始化（延迟 100ms 确保 UI 渲染完成）
+    QTimer::singleShot(100, this, &InitialPage::onStartClicked);
 }
 
 /**

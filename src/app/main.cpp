@@ -36,6 +36,10 @@ static void addDllSearchPaths()
 
 int main(int argc, char* argv[])
 {
+    // 启用高 DPI 缩放支持
+    QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+    QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
+
     QApplication a(argc, argv);
     a.setWindowIcon(QIcon(":/Eftp/icon/e.ico"));
 

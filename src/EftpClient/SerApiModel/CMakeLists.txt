@@ -22,4 +22,8 @@ target_link_libraries(SerApiModel PRIVATE
     Qt5::Core
 )
 
-target_include_directories(SerApiModel PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(SerApiModel PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_SOURCE_DIR}/src/core/HttpClient
+    ${CMAKE_SOURCE_DIR}/third_party/cpp-httplib
+)

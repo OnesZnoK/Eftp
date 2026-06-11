@@ -8,6 +8,7 @@
 #include "EftpTypes.h"
 #include "ItemProgramTestModel.h"
 #include "ItemProgramTestDelegate.h"
+#include "SerApiModel.h"
 
 /**
  * @brief 阶段测试页面 — QTreeView 填满空间，底部开始按钮

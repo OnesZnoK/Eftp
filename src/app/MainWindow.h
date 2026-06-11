@@ -43,6 +43,8 @@ private:
 
     DeviceInfo         m_deviceInfo;   ///< 当前设备信息
     TestPlanInfo       m_testPlan;     ///< 当前测试计划
+    bool               m_autoWifiSwitch = true;  ///< WiFi自动切换模式（true=自动, false=手动）
+    QDialog*           m_errorDialog = nullptr;   ///< 非模态错误弹窗（成功后自动关闭）
 
     Ui::MainWindow     ui;
 
@@ -52,6 +54,8 @@ signals:
                            const DeviceBaseDataInfo& devInfo,
                            const TestPlanInfo& plan);
     void routeInfoReady(const QString& processName);
+    /** @brief API 错误弹窗（后台线程发射，MainWindow 主线程接收） */
+    void apiError(const QString& message);
 
 private slots:
     void onDeviceInfoReady(const DeviceInfo& info);   ///< 设备采集成功
@@ -72,4 +76,5 @@ private slots:
                            const TestPlanInfo& plan);
     /** @brief 工序信息回调（更新 UI 工序标签） */
     void onRouteInfoReady(const QString& processName);
+    void onWifiModeToggled();                   ///< 切换WiFi手动/自动模式
 };

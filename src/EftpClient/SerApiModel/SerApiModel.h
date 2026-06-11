@@ -60,6 +60,7 @@
 #include <functional>
 
 #include "EftpTypes.h"
+#include "HttpClient.h"
 #include "json.hpp"
 
 #ifdef SERAPIMODEL_LIBRARY
@@ -79,6 +80,12 @@ class SERAPIMODEL_EXPORT SerApiModel
 public:
     SerApiModel();
     ~SerApiModel();
+
+    /** @brief 获取最后一次 API 失败的 message */
+    std::string lastError() const { return m_lastError; }
+
+    /** @brief 设置全局 HTTP 重试回调（所有 SerApiModel 实例共享） */
+    static void setRetryCallback(RetryCallback callback) { s_retryCallback = callback; }
 
     // ── 查询类 ──
 
@@ -116,6 +123,12 @@ public:
      * @param cycleItemId 测试项ID
      */
     TestItemResult queryCycleTestItemInfo(int cycleItemId);
+
+    /**
+     * @brief 查询测试项详情（含规则结果列表，用于详情对话框）
+     * @param cycleItemId 测试项ID
+     */
+    TestDeviceCycleItemVO queryCycleTestItemDetail(int cycleItemId);
 
     // ── 上报类 ──
 
@@ -231,4 +244,7 @@ private:
     ApiResponse parseResponse(const std::string& body);
     std::string buildQueryString(
         const std::vector<std::pair<std::string, std::string>>& params);
+
+    std::string m_lastError;  ///< 最后一次 API 失败的 message
+    static RetryCallback s_retryCallback;  ///< 全局 HTTP 重试回调
 };

@@ -3,6 +3,9 @@
 #include "HttpClient.h"
 #include "qtlogger.h"
 
+// 静态成员初始化
+RetryCallback SerApiModel::s_retryCallback = nullptr;
+
 SerApiModel::SerApiModel()
 {
 }
@@ -21,7 +24,7 @@ ApiResponse SerApiModel::doGet(const std::string& apiKey,
         url += "?" + buildQueryString(params);
     }
     QtLogger::WriteLog("SerApiModel::doGet " + QString::fromStdString(apiKey));
-    HttpResult res = HttpClient::GetRaw(url);
+    HttpResult res = HttpClient::GetRaw(url, 10, s_retryCallback);
     QtLogger::WriteLog(QString("SerApiModel::doGet HTTP完成, status=%1, bodySize=%2")
         .arg(res.status).arg((int)res.body.size()));
     ApiResponse resp = parseResponse(res.body);
@@ -81,6 +84,7 @@ DeviceBaseDataInfo SerApiModel::queryDeviceInfo(const std::string& sn,
         {"mainBoardSn", mainBoardSn}
     });
     if (!resp.success || !resp.data.is_object()) {
+        info.errorMessage = resp.message;
         QtLogger::WriteLog("queryDeviceInfo 失败: " + QString::fromStdString(resp.message),
                            enLogType::WARNING);
         return info;
@@ -134,6 +138,7 @@ TestPlanInfo SerApiModel::queryDeviceTestInfo(const std::string& sn)
     TestPlanInfo plan;
     ApiResponse resp = doGet("queryDeviceTestInfo", {{"sn", sn}});
     if (!resp.success || !resp.data.is_object()) {
+        plan.errorMessage = resp.message;
         QtLogger::WriteLog("queryDeviceTestInfo 失败: " + QString::fromStdString(resp.message),
                            enLogType::WARNING);
         return plan;
@@ -155,6 +160,7 @@ TestPlanInfo SerApiModel::queryDeviceTestInfo(const std::string& sn)
                 stage.stageId = stageJson.value("stageId", 0);
                 stage.stageName = stageJson.value("stageName", "");
                 stage.stageState = stageJson.value("status", 0);
+                stage.isAutoExecute = stageJson.value("isAutoExecute", 0);
 
                 // testDeviceCycleItemVOList 是二维数组 [[item, item], [item]]
                 if (stageJson.contains("testDeviceCycleItemVOList") &&
@@ -250,6 +256,35 @@ TestItemResult SerApiModel::queryCycleTestItemInfo(int cycleItemId)
         }
     }
     return item;
+}
+
+TestDeviceCycleItemVO SerApiModel::queryCycleTestItemDetail(int cycleItemId)
+{
+    TestDeviceCycleItemVO vo;
+    ApiResponse resp = doGet("queryCycleTestItemInfo", {
+        {"cycleItemId", std::to_string(cycleItemId)}
+    });
+    if (!resp.success || !resp.data.is_object()) {
+        return vo;
+    }
+    auto& d = resp.data;
+    vo.deviceCycleItemId = d.value("deviceCycleItemId", 0);
+    vo.itemName = QString::fromStdString(d.value("itemName", ""));
+    vo.result = d.value("result", 0);
+    vo.tips = QString::fromStdString(d.value("tips", ""));
+    vo.isRepeatTest = d.value("isRepeatTest", 0);
+    if (d.contains("testDeviceCycleItemResultVOList") &&
+        d["testDeviceCycleItemResultVOList"].is_array()) {
+        for (auto& rule : d["testDeviceCycleItemResultVOList"]) {
+            TestDeviceCycleItemResultVO ruleVO;
+            ruleVO.errorInfo = QString::fromStdString(rule.value("errorInfo", ""));
+            ruleVO.result = rule.value("result", 1);
+            ruleVO.ruleName = QString::fromStdString(rule.value("ruleName", ""));
+            ruleVO.testStandard = QString::fromStdString(rule.value("testStandard", ""));
+            vo.testDeviceCycleItemResultVOList.append(ruleVO);
+        }
+    }
+    return vo;
 }
 
 // ── 上报类 ──
@@ -431,6 +466,7 @@ TestPlanInfo SerApiModel::queryDeviceTestInfoForWareHouse(const std::string& sn,
         {"mac", mac}
     });
     if (!resp.success || !resp.data.is_object()) {
+        m_lastError = resp.message;
         QtLogger::WriteLog("queryDeviceTestInfoForWareHouse 失败: " + QString::fromStdString(resp.message),
                            enLogType::WARNING);
         return plan;
@@ -450,6 +486,7 @@ TestPlanInfo SerApiModel::queryDeviceTestInfoForWareHouse(const std::string& sn,
             stage.stageId = stageJson.value("stageId", 0);
             stage.stageName = stageJson.value("stageName", "");
             stage.stageState = stageJson.value("status", 0);
+            stage.isAutoExecute = stageJson.value("isAutoExecute", 0);
 
             if (stageJson.contains("testDeviceCycleItemVOList") &&
                 stageJson["testDeviceCycleItemVOList"].is_array()) {

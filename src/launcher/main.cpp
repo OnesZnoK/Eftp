@@ -126,33 +126,34 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         cmdLine += " " + fullCmd.substr(argStart + 1);
     }
 
-    // 启动 EFTP.exe
-    STARTUPINFOA si = { sizeof(si) };
-    PROCESS_INFORMATION pi = {};
+    // 以管理员身份启动 EFTP.exe，最大化窗口
+    std::string eftpPath = exeDir + "\\EFTP.exe";
+    std::string params;
+    if (argStart != std::string::npos) {
+        params = fullCmd.substr(argStart + 1);
+    }
 
-    BOOL ok = CreateProcessA(
-        NULL,
-        (LPSTR)cmdLine.c_str(),
-        NULL, NULL, FALSE,
-        0, NULL, NULL,
-        &si, &pi
-    );
+    SHELLEXECUTEINFOA sei = { sizeof(sei) };
+    sei.fMask = SEE_MASK_NOCLOSEPROCESS;
+    sei.lpVerb = "runas";           // 以管理员身份运行
+    sei.lpFile = eftpPath.c_str();
+    sei.lpParameters = params.empty() ? NULL : params.c_str();
+    sei.nShow = SW_SHOWMAXIMIZED;   // 最大化窗口
 
-    if (!ok) {
+    if (!ShellExecuteExA(&sei)) {
         char msg[256];
-        sprintf_s(msg, "无法启动 EFTP.exe (错误码: %lu)", GetLastError());
+        sprintf_s(msg, "无法以管理员身份启动 EFTP.exe (错误码: %lu)", GetLastError());
         MessageBoxA(NULL, msg, "EFTP Launcher", MB_ICONERROR);
         return 1;
     }
 
     // 等待子进程结束
-    WaitForSingleObject(pi.hProcess, INFINITE);
+    WaitForSingleObject(sei.hProcess, INFINITE);
 
     DWORD exitCode = 0;
-    GetExitCodeProcess(pi.hProcess, &exitCode);
+    GetExitCodeProcess(sei.hProcess, &exitCode);
 
-    CloseHandle(pi.hProcess);
-    CloseHandle(pi.hThread);
+    CloseHandle(sei.hProcess);
 
     return (int)exitCode;
 }

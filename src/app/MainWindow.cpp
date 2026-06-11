@@ -10,6 +10,7 @@
 #include "NetworkMonitor.h"
 #include "SystemTrayManager.h"
 #include "SettingsAction.h"
+#include "BindDeviceAction.h"
 #include "SettingsDialog.h"
 
 // ── UI 组件 ──
@@ -64,6 +65,14 @@ void MainWindow::createModules()
     m_netMonitor  = new NetworkMonitor(this);
     m_sysTray     = new SystemTrayManager(this);
 
+    // 设置 HTTP 重试回调（更新 Tips 提示）
+    SerApiModel::setRetryCallback([this](int retryCount, const std::string& url) {
+        QMetaObject::invokeMethod(this, [this, retryCount]() {
+            ui.labelTitleResult->setText(QString("网络请求重试中... (第 %1 次)").arg(retryCount));
+            ui.textEditTips->setText(QString("网络请求失败，正在重试 (第 %1 次)").arg(retryCount));
+        }, Qt::QueuedConnection);
+    });
+
     // 注册托盘菜单动作
     auto* settingsAction = new SettingsAction(m_sysTray);
     connect(settingsAction, &SettingsAction::openSettings, this, [this]() {
@@ -71,6 +80,25 @@ void MainWindow::createModules()
         dlg.exec();
     });
     m_sysTray->addAction(settingsAction);
+
+    // 设备绑定（手动触发，防止误操作）
+    auto* bindAction = new BindDeviceAction(m_sysTray);
+    connect(bindAction, &BindDeviceAction::openBindDialog, this, [this]() {
+        SNMacBindDialog dlg(m_deviceInfo.deviceMac, this);
+        if (dlg.exec() == QDialog::Accepted) {
+            QString sn = dlg.sn();
+            QString mac = dlg.mac();
+            QtLogger::WriteLog("MainWindow: 设备绑定 SN=" + sn + " MAC=" + mac);
+            // 后台发送绑定请求
+            QtConcurrent::run([this, sn, mac]() {
+                SerApiModel api;
+                api.addMacAddr(sn.toStdString(), mac.toStdString(),
+                    m_deviceInfo.baseboardSn.toStdString(), 1);
+                QtLogger::WriteLog("MainWindow: 设备绑定请求已发送");
+            });
+        }
+    });
+    m_sysTray->addAction(bindAction);
 }
 
 void MainWindow::connectSignals()
@@ -85,9 +113,10 @@ void MainWindow::connectSignals()
     connect(m_downloadMgr, &DownloadManager::downloadCompleted,
             m_testOrch, &TestOrchestrator::onDownloadCompleted);
 
-    // 下载状态 → Tips
+    // 下载状态 → Tips + 标题栏
     connect(m_testOrch, &TestOrchestrator::requestDownload,
             this, [this](int, const QString& url, const QString&) {
+                ui.labelTitleResult->setText("准备下载: " + url);
                 ui.textEditTips->setText("下载中: " + url);
             });
     connect(m_downloadMgr, &DownloadManager::downloadCompleted,
@@ -96,6 +125,19 @@ void MainWindow::connectSignals()
                     ? "下载完成: " + localPath
                     : "下载失败: " + localPath);
             });
+
+    // 下载进度 → Tips + 标题栏显示（跨线程，用 QueuedConnection）
+    connect(m_downloadMgr, &DownloadManager::downloadProgress,
+            this, [this](const QString&, qint64 received, qint64 total) {
+                if (total > 0) {
+                    int percent = (int)(received * 100 / total);
+                    double recvMB = (double)received / 1024.0 / 1024.0;
+                    double totalMB = (double)total / 1024.0 / 1024.0;
+                    QString sizeStr = QString("%1MB/%2MB").arg(recvMB, 0, 'f', 1).arg(totalMB, 0, 'f', 1);
+                    ui.labelTitleResult->setText(QString("下载中 %1% (%2)").arg(percent).arg(sizeStr));
+                    ui.textEditTips->setText(QString("下载进度: %1% (%2)").arg(percent).arg(sizeStr));
+                }
+            }, Qt::QueuedConnection);
 
     // ═══ 后台版本检查（TestOrchestrator 内置）═══
     // TestOrchestrator 请求下载 → DownloadManager 执行
@@ -121,25 +163,39 @@ void MainWindow::connectSignals()
         QtLogger::WriteLog("MainWindow: 网络恢复");
     });
     connect(m_netMonitor, &NetworkMonitor::wifiSwitching, this, [this](const QString& ssid) {
-        ui.textEditTips->setText("正在切换WiFi: " + ssid);
+        ui.labelTitleResult->setText("正在切换WiFi: " + ssid);
     });
     connect(m_netMonitor, &NetworkMonitor::wifiConnected, this, [this](const QString& ssid) {
-        ui.textEditTips->setText("WiFi已连接: " + ssid);
+        ui.labelTitleResult->setText("WiFi已连接: " + ssid);
     });
 
-    // 网络状态 → 右上角显示
+    // WiFi 手动/自动切换按钮
+    connect(ui.btnWifiMode, &QPushButton::clicked, this, &MainWindow::onWifiModeToggled);
+
+    // 网络状态 → 右上角显示 + 延迟过高时双处提示
     connect(m_netMonitor, &NetworkMonitor::pingResult, this,
             [this](const QString& ssid, int latencyMs) {
         int threshold = ConfigManager::instance().latencyThresholdMs();
         if (latencyMs < 0) {
             ui.labelNetwork->setText(QString("%1 | 超时").arg(ssid));
             ui.labelNetwork->setStyleSheet("font-size:14px; color:#E73C31; font-weight:bold; padding:0 8px;");
+            ui.labelTitleResult->setText("网络超时，请检查网络连接");
+            ui.textEditTips->setText("网络超时: " + ssid);
         } else if (latencyMs > threshold) {
             ui.labelNetwork->setText(QString("%1 | %2ms 延迟过高").arg(ssid).arg(latencyMs));
             ui.labelNetwork->setStyleSheet("font-size:14px; color:#F37E00; padding:0 8px;");
+            ui.labelTitleResult->setText(QString("网络延迟过高: %1ms").arg(latencyMs));
+            ui.textEditTips->setText(QString("网络延迟过高: %1 %2ms (阈值%3ms)").arg(ssid).arg(latencyMs).arg(threshold));
         } else {
             ui.labelNetwork->setText(QString("%1 | %2ms").arg(ssid).arg(latencyMs));
             ui.labelNetwork->setStyleSheet("font-size:14px; color:#01B659; padding:0 8px;");
+            // 网络正常，清除之前的异常提示
+            if (ui.textEditTips->toPlainText().contains("延迟过高") || ui.textEditTips->toPlainText().contains("超时")) {
+                ui.textEditTips->clear();
+            }
+            if (ui.labelTitleResult->text().contains("超时") || ui.labelTitleResult->text().contains("延迟过高")) {
+                ui.labelTitleResult->clear();
+            }
         }
     });
 
@@ -156,12 +212,31 @@ void MainWindow::connectSignals()
     connect(m_testOrch, &TestOrchestrator::testStarted, [this]() {
         ui.labelTitleResult->setText("测试进行中...");
     });
+    connect(m_testOrch, &TestOrchestrator::showTips, this, [this](const QString& msg) {
+        ui.labelTitleResult->setText(msg);
+        ui.textEditTips->setText(msg);
+    });
     connect(m_testOrch, &TestOrchestrator::testStageStarted, this, &MainWindow::onTestStageStarted);
     connect(m_testOrch, &TestOrchestrator::testItemStarted, this, &MainWindow::onTestItemStarted);
     connect(m_testOrch, &TestOrchestrator::testItemCompleted, this, &MainWindow::onTestItemCompleted);
     connect(m_testOrch, &TestOrchestrator::testStageCompleted, this, &MainWindow::onTestStageCompleted);
     connect(m_testOrch, &TestOrchestrator::allTestsCompleted, this, &MainWindow::onAllTestsCompleted);
     connect(m_testOrch, &TestOrchestrator::testError, this, &MainWindow::onTestError);
+
+    // API 错误弹窗（非模态，成功后自动关闭）
+    connect(this, &MainWindow::apiError, this, [this](const QString& msg) {
+        if (m_errorDialog) {
+            m_errorDialog->close();
+            m_errorDialog->deleteLater();
+            m_errorDialog = nullptr;
+        }
+        auto* dlg = new ErrorDialog(ErrorDialog::Error, "错误", msg, this);
+        m_errorDialog = dlg;
+        connect(dlg, &QDialog::finished, this, [this]() {
+            m_errorDialog = nullptr;
+        });
+        dlg->show();
+    }, Qt::QueuedConnection);
 
     // DownloadManager → UI
     connect(m_downloadMgr, &DownloadManager::downloadProgress, this, &MainWindow::onDownloadProgress);
@@ -203,18 +278,33 @@ void MainWindow::onDeviceInfoReady(const DeviceInfo& info)
         std::string sn = info.deviceSn.toStdString();
 
         QtLogger::WriteLog("MainWindow: 查询设备信息 SN=" + info.deviceSn);
-        DeviceBaseDataInfo devInfo = api.queryDeviceInfo(sn, info.deviceMac.toStdString(), info.baseboardSn.toStdString());
+        DeviceBaseDataInfo devInfo;
+        int retry = 0;
+        while (true) {
+            devInfo = api.queryDeviceInfo(sn, info.deviceMac.toStdString(), info.baseboardSn.toStdString());
+            if (devInfo.errorMessage.empty()) break;
+            retry++;
+            QtLogger::WriteLog(QString("MainWindow: queryDeviceInfo 失败，5秒后重试 (第 %1 次)").arg(retry));
+            emit apiError(QString::fromStdString(devInfo.errorMessage));
+            QThread::sleep(5);
+        }
 
         // 查询工序信息（routeProcessesName 值不同）
         DeviceRouteDataInfo routeInfo = api.queryDeviceRouteInfo(sn, info.deviceMac.toStdString());
 
-        // 根据工序连接对应 WiFi
+        // 根据工序连接对应 WiFi（手动模式下跳过）
         QMetaObject::invokeMethod(this, [this, routeInfo]() {
-            m_netMonitor->connectForRoute(routeInfo.routeId);
+            if (m_autoWifiSwitch) {
+                m_netMonitor->connectForRoute(routeInfo.routeProcessesId);
+            } else {
+                QtLogger::WriteLog("MainWindow: WiFi手动模式，跳过工序网络切换");
+            }
         }, Qt::QueuedConnection);
 
-        QtLogger::WriteLog("MainWindow: 设备信息完成, 工序=" + QString::fromUtf8(devInfo.routeProcessesName.c_str())
-            + ", 工作站=" + QString::fromUtf8(routeInfo.routeProcessesName.c_str()));
+        QtLogger::WriteLog(QString("MainWindow: 设备信息完成, 工序=%1, 工作站=%2, routeProcessesId=%3")
+            .arg(QString::fromUtf8(routeInfo.routeProcessesName.c_str()))
+            .arg(QString::fromUtf8(devInfo.routeProcessesName.c_str()))
+            .arg(routeInfo.routeProcessesId));
 
         // 发射设备信息信号（不覆盖 routeProcessesName）
         TestPlanInfo emptyPlan;
@@ -228,9 +318,27 @@ void MainWindow::onDeviceInfoReady(const DeviceInfo& info)
         std::string sn = info.deviceSn.toStdString();
 
         QtLogger::WriteLog("MainWindow: 查询测试计划...");
-        TestPlanInfo plan = api.queryDeviceTestInfo(sn);
+        TestPlanInfo plan;
+        int retry2 = 0;
+        while (true) {
+            plan = api.queryDeviceTestInfo(sn);
+            if (plan.errorMessage.empty()) break;
+            retry2++;
+            QtLogger::WriteLog(QString("MainWindow: queryDeviceTestInfo 失败，5秒后重试 (第 %1 次)").arg(retry2));
+            emit apiError(QString::fromStdString(plan.errorMessage));
+            QThread::sleep(5);
+        }
         QtLogger::WriteLog(QString("MainWindow: 查询测试计划完成, stages=%1, isAuto=%2")
             .arg((int)plan.stages.size()).arg(plan.isAutoExecute));
+
+        // API 成功，关闭错误弹窗
+        QMetaObject::invokeMethod(this, [this]() {
+            if (m_errorDialog) {
+                m_errorDialog->close();
+                m_errorDialog->deleteLater();
+                m_errorDialog = nullptr;
+            }
+        }, Qt::QueuedConnection);
 
         // 发射测试计划信号
         DeviceBaseDataInfo emptyDevInfo;
@@ -241,7 +349,7 @@ void MainWindow::onDeviceInfoReady(const DeviceInfo& info)
 void MainWindow::onDeviceInfoError(const QString& error)
 {
     ui.labelTitleResult->setText("采集失败: " + error);
-    ErrorDialog::showError(this, "设备信息采集失败", error);
+    ui.textEditTips->setText("设备信息采集失败: " + error);
 }
 
 /**
@@ -276,7 +384,7 @@ void MainWindow::onServerQueryDone(const DeviceInfo& deviceInfo,
         m_testOrch->setTestPlan(plan);
 
         // 等用户手动点击"开始测试"按钮
-        ui.labelTitleResult->setText(QString::fromLocal8Bit("请在对应阶段点击\"开始测试\""));
+        ui.labelTitleResult->setText(u8"请在对应阶段点击\"开始测试\"");
 
         QtLogger::WriteLog("MainWindow: 测试计划已更新");
     }
@@ -306,13 +414,18 @@ void MainWindow::createTabPages(const TestPlanInfo& plan)
 
     for (int i = 0; i < (int)plan.stages.size(); i++) {
         StageTestPage* page = new StageTestPage(this);
-        page->setStageData(plan.stages[i], plan.isAutoExecute == 1);
+        page->setStageData(plan.stages[i], plan.stages[i].isAutoExecute == 1);
         ui.tabWidget->addTab(page, QString::fromUtf8(plan.stages[i].stageName.c_str()));
         m_stagePages.append(page);
 
         // 连接"开始测试"按钮 → TestOrchestrator
         connect(page, &StageTestPage::startTestRequested, [this, i]() {
             m_testOrch->start(i);
+        });
+
+        // 连接"重测"按钮 → TestOrchestrator
+        connect(page, &StageTestPage::retestRequested, [this](int cycleItemId) {
+            m_testOrch->retest(cycleItemId);
         });
     }
 }
@@ -440,4 +553,24 @@ void MainWindow::onRouteInfoReady(const QString& processName)
 {
     ui.labelProcessName->setText(processName);
     QtLogger::WriteLog("MainWindow: 工序信息已更新: " + processName);
+}
+
+void MainWindow::onWifiModeToggled()
+{
+    m_autoWifiSwitch = !m_autoWifiSwitch;
+    if (m_autoWifiSwitch) {
+        ui.btnWifiMode->setText("自动");
+        ui.btnWifiMode->setProperty("mode", "");
+        ui.btnWifiMode->style()->unpolish(ui.btnWifiMode);
+        ui.btnWifiMode->style()->polish(ui.btnWifiMode);
+        ui.textEditTips->setText("WiFi已切换为自动模式");
+        QtLogger::WriteLog("MainWindow: WiFi切换为自动模式");
+    } else {
+        ui.btnWifiMode->setText("手动");
+        ui.btnWifiMode->setProperty("mode", "manual");
+        ui.btnWifiMode->style()->unpolish(ui.btnWifiMode);
+        ui.btnWifiMode->style()->polish(ui.btnWifiMode);
+        ui.textEditTips->setText("WiFi已切换为手动模式，不会随工序自动切换网络");
+        QtLogger::WriteLog("MainWindow: WiFi切换为手动模式");
+    }
 }

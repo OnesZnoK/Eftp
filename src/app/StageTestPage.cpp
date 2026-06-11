@@ -134,13 +134,15 @@ void StageTestPage::onItemClicked(const QModelIndex& index)
 
     const auto& item = m_stage.items[itemIndex];
 
-    // 构造 TestDeviceCycleItemVO 用于对话框
-    TestDeviceCycleItemVO vo;
-    vo.itemName = QString::fromUtf8(item.itemName.c_str());
-    vo.deviceCycleItemId = item.cycleItemId;
-    vo.result = item.testResult;
-    vo.isRepeatTest = 1; // 默认支持重测
-    vo.tips = QString::fromUtf8(item.detail.c_str());
+    // 调用 API 查询测试项详情（含规则结果列表）
+    SerApiModel api;
+    TestDeviceCycleItemVO vo = api.queryCycleTestItemDetail(item.cycleItemId);
+    if (vo.itemName.isEmpty()) {
+        vo.itemName = QString::fromUtf8(item.itemName.c_str());
+    }
+    if (vo.result == 0) {
+        vo.result = item.testResult;
+    }
 
     // 显示详情对话框
     ItemDetailInfoDialog dialog(this, m_autoTestOver);

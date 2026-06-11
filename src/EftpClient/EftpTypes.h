@@ -93,6 +93,7 @@ struct DeviceBaseDataInfo {
     std::string targetSkuName;      // 目标SKU名称
     std::string isStandard;         // 是否标准品
     std::string remark;             // 备注
+    std::string errorMessage;       // API 失败时的错误信息
 };
 
 /**
@@ -125,6 +126,7 @@ struct TestItemResult {
     std::string detail;             // 详细信息
     std::string callHref;           // 程序路径（exe）
     std::string extractHref;        // 安装目录（含 version.txt）
+    int isRepeatTest = 0;           // 是否支持重测：0=否, 1=是
 };
 
 /**
@@ -134,6 +136,7 @@ struct TestStageInfo {
     int stageId = 0;                // 阶段ID
     std::string stageName;          // 阶段名称
     int stageState = 0;             // 阶段状态：0=未开始, 1=运行中, 2=完成
+    int isAutoExecute = 0;          // 是否自动执行：0=手动, 1=自动
     std::vector<TestItemResult> items;  // 该阶段下的所有测试项
 };
 
@@ -169,6 +172,7 @@ struct TestPlanInfo {
     std::string sn;                 // 设备序列号
     std::vector<TestStageInfo> stages;  // 所有测试阶段列表
     TestDeviceInitInfoVO initInfo;  // 初始化信息（isInit=1 时有数据）
+    std::string errorMessage;       // API 失败时的错误信息
 };
 
 /**

@@ -12,8 +12,7 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 
 if(MSVC)
-    add_compile_options(/utf-8 /MP)
-    # 增量编译：只编译修改过的文件
+    add_compile_options(/utf-8 /MP /W3 /nologo)
     set(CMAKE_SKIP_PREPROCESSED_SOURCE_RULES ON)
     set(CMAKE_SKIP_ASSEMBLY_SOURCE_RULES ON)
 endif()
@@ -29,6 +28,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/out/lib")  # .lib .exp �
 # 查找 Qt5
 # ============================================================
 find_package(Qt5 REQUIRED COMPONENTS Core Network Gui Widgets Concurrent Sql Xml)
+
 set(QT_VERSION_MAJOR 5)
 
 # ============================================================

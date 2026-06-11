@@ -53,7 +53,7 @@ public:
      * @brief 启动定时 ping 监控
      * @param intervalMs 检查间隔（毫秒），默认 8 秒
      */
-    void startMonitor(int intervalMs = 8000);
+    void startMonitor(int intervalMs = 5000);
 
     /**
      * @brief 停止监控
@@ -74,9 +74,24 @@ private:
     bool pingBaidu();
     QString getCurrentWifiSsid();
     void connectToWifi(const QString& ssid, const QString& password);
-    void reconnectNetwork();
+
+    /** @brief 网络监控状态 */
+    enum class NetState {
+        Normal,          // 正常：3s ping
+        FallbackWifi,    // 累积失败达阈值：切回默认WiFi（不再切回目标）
+        ResetNetwork     // 默认WiFi也失败：重置网络
+    };
 
     QTimer m_timer;
     bool m_isNetworkOk = true;
-    int m_failCount = 0;
+    int m_failCount = 0;            // 累积失败次数
+    NetState m_netState = NetState::Normal;
+    bool m_useDefaultWifi = false;  // true=已切回默认WiFi，不再切回目标
+    int m_resetCount = 0;           // 重置网络次数
+    QString m_targetSsid;           // 目标 WiFi SSID（工序对应）
+    QString m_targetPassword;       // 目标 WiFi 密码
+
+    int m_pingInterval = 3000;   // ping 间隔（从配置读取）
+    int m_failThreshold = 5;     // 累积失败阈值（从配置读取）
+    static constexpr int RESET_INTERVAL = 10000;    // 重置网络后等待
 };

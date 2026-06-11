@@ -4,6 +4,7 @@ add_library(SystemTrayManager STATIC
     SystemTrayManager.cpp
     actions/ITrayAction.h
     actions/SettingsAction.h
+    actions/BindDeviceAction.h
 )
 
 set_target_properties(SystemTrayManager PROPERTIES

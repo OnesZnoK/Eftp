@@ -37,7 +37,8 @@
   },
   "network": {
     "pingTarget": "www.baidu.com",
-    "pingIntervalSec": 8
+    "pingIntervalSec": 3,
+    "failThreshold": 5
   },
   "environment": "product",
   "log": {

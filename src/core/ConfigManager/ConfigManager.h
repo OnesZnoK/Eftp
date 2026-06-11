@@ -85,6 +85,7 @@ public:
     // ── 网络 ──
     std::string pingTarget() const;
     int pingIntervalSec() const;
+    int failThreshold() const;       // ping 累积失败阈值（达到后切网）
     int latencyThresholdMs() const;  // 延迟阈值（超过则提示网络环境差）
 
     // ── WiFi ──

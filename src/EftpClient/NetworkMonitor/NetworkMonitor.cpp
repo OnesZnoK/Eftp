@@ -7,6 +7,22 @@
 #include <QDir>
 #include <QCoreApplication>
 #include <QtConcurrent>
+#include <windows.h>
+#include <vector>
+
+/**
+ * @brief GBK 解码辅助函数（netsh 在中文 Windows 输出 GBK）
+ */
+static QString decodeGbk(const QByteArray& raw)
+{
+    int wideLen = MultiByteToWideChar(936, 0, raw.constData(), raw.size(), nullptr, 0);
+    if (wideLen > 0) {
+        std::vector<wchar_t> wbuf(wideLen + 1, L'\0');
+        MultiByteToWideChar(936, 0, raw.constData(), raw.size(), wbuf.data(), wideLen);
+        return QString::fromStdWString(wbuf.data());
+    }
+    return QString::fromLocal8Bit(raw);
+}
 
 NetworkMonitor::NetworkMonitor(QObject* parent)
     : QObject(parent)
@@ -54,6 +70,11 @@ void NetworkMonitor::connectForRoute(int routeId)
         return;
     }
 
+    // 保存目标 WiFi 信息（监控状态机用）
+    m_targetSsid = ssid;
+    m_targetPassword = password;
+    m_useDefaultWifi = false;
+
     // 检查当前是否已在目标 WiFi
     QString currentSsid = getCurrentWifiSsid();
     if (currentSsid == ssid) {
@@ -67,12 +88,22 @@ void NetworkMonitor::connectForRoute(int routeId)
     connectToWifi(ssid, password);
 }
 
-/** @brief 启动定时 ping 监控 */
+/** @brief 启动定时 ping 监控（从配置文件读取间隔和阈值） */
 void NetworkMonitor::startMonitor(int intervalMs)
 {
-    QtLogger::WriteLog(QString("NetworkMonitor: 启动定时监控，间隔 %1 秒").arg(intervalMs / 1000));
-    checkNetwork();      // 立即执行一次
-    m_timer.start(intervalMs);
+    Q_UNUSED(intervalMs);
+    auto& cfg = ConfigManager::instance();
+    m_pingInterval = cfg.pingIntervalSec() * 1000;
+    m_failThreshold = cfg.failThreshold();
+
+    QtLogger::WriteLog(QString("NetworkMonitor: 启动定时监控，间隔 %1 秒，失败阈值 %2 次")
+        .arg(cfg.pingIntervalSec()).arg(m_failThreshold));
+
+    // 延迟 2 秒再首次 ping，等待网络就绪
+    QTimer::singleShot(2000, this, [this]() {
+        checkNetwork();
+    });
+    m_timer.start(m_pingInterval);
 }
 
 void NetworkMonitor::stopMonitor()
@@ -82,16 +113,20 @@ void NetworkMonitor::stopMonitor()
 }
 
 /**
- * @brief 定时检测网络（ping + WiFi 状态检查）
+ * @brief 定时检测网络（状态机，3秒一次，累积失败达阈值才切网）
+ *
+ * 流程：
+ *   Normal (3s ping) → 累积 5 次失败 → 切回默认WiFi
+ *   → 累积 5 次失败 → 重连目标WiFi → 累积 5 次失败 → 重置网络
+ *   任意状态 ping 成功 → 回到 Normal，清零计数
  */
 void NetworkMonitor::checkNetwork()
 {
     QtConcurrent::run([this]() {
-        // 从配置读取 ping 目标
         QString pingTarget = QString::fromStdString(ConfigManager::instance().pingTarget());
         QString currentSsid = getCurrentWifiSsid();
 
-        // 执行 ping 并获取延迟
+        // 执行 ping
         QProcess process;
         process.start("ping", {"-n", "1", "-w", "3000", pingTarget});
         bool finished = process.waitForFinished(5000);
@@ -100,10 +135,9 @@ void NetworkMonitor::checkNetwork()
         bool pingOk = false;
 
         if (finished) {
-            QString output = process.readAllStandardOutput();
+            QString output = decodeGbk(process.readAllStandardOutput());
             pingOk = output.contains("TTL");
 
-            // 提取延迟：中文系统 "时间=XXms" 或英文 "time=XXms"
             QRegularExpression re("(?:时间|time)[<=](\\d+)", QRegularExpression::CaseInsensitiveOption);
             QRegularExpressionMatch match = re.match(output);
             if (match.hasMatch()) {
@@ -115,23 +149,59 @@ void NetworkMonitor::checkNetwork()
         emit pingResult(currentSsid, latencyMs);
 
         if (pingOk) {
+            // ═══ ping 成功 → 回到正常状态 ═══
             if (!m_isNetworkOk) {
                 QtLogger::WriteLog("NetworkMonitor: 网络恢复");
                 emit networkRestored();
             }
             m_isNetworkOk = true;
+            m_netState = NetState::Normal;
             m_failCount = 0;
+            m_resetCount = 0;
         } else {
+            // ═══ ping 失败 → 累积计数 ═══
             m_failCount++;
-            QtLogger::WriteLog(QString("NetworkMonitor: ping 失败 (第 %1 次)").arg(m_failCount));
+            QtLogger::WriteLog(QString("NetworkMonitor: ping 失败 (第 %1/%2 次), state=%3")
+                .arg(m_failCount).arg(m_failThreshold).arg((int)m_netState));
 
             if (m_isNetworkOk) {
                 m_isNetworkOk = false;
                 emit networkLost();
             }
 
-            if (m_failCount >= 3) {
-                reconnectNetwork();
+            // 累积失败未达阈值，继续 ping
+            if (m_failCount < m_failThreshold) {
+                return;
+            }
+
+            // 累积失败达到阈值 → 状态机转换
+            m_failCount = 0;
+
+            switch (m_netState) {
+            case NetState::Normal:
+                // 累积失败达阈值 → 切回默认 WiFi（不再切回目标）
+                m_netState = NetState::FallbackWifi;
+                QtLogger::WriteLog("NetworkMonitor: 累积失败达阈值，切回默认 WiFi");
+                m_useDefaultWifi = true;
+                connectDefaultWifi();
+                break;
+
+            case NetState::FallbackWifi:
+                // 默认 WiFi 也累积失败 → 重置网络
+                m_netState = NetState::ResetNetwork;
+                m_resetCount++;
+                QtLogger::WriteLog(QString("NetworkMonitor: 默认 WiFi 失败，重置网络 (第 %1 次)").arg(m_resetCount));
+                QtConcurrent::run([]() {
+                    QProcess::execute("ipconfig", {"/release"});
+                    QProcess::execute("ipconfig", {"/renew"});
+                });
+                break;
+
+            case NetState::ResetNetwork:
+                // 重置后仍累积失败 → 回到 FallbackWifi，继续用默认 WiFi
+                QtLogger::WriteLog("NetworkMonitor: 重置后仍失败，继续用默认 WiFi 监控");
+                m_netState = NetState::FallbackWifi;
+                break;
             }
         }
     });
@@ -142,8 +212,9 @@ void NetworkMonitor::checkNetwork()
  */
 bool NetworkMonitor::pingBaidu()
 {
+    QString pingTarget = QString::fromStdString(ConfigManager::instance().pingTarget());
     QProcess process;
-    process.start("ping", {"-n", "1", "-w", "3000", "www.baidu.com"});
+    process.start("ping", {"-n", "1", "-w", "3000", pingTarget});
     if (!process.waitForFinished(5000)) {
         return false;
     }
@@ -162,11 +233,14 @@ QString NetworkMonitor::getCurrentWifiSsid()
         return "未知";
     }
 
-    QString output = QString::fromLocal8Bit(process.readAllStandardOutput());
-    QStringList lines = output.split("\r\n");
+    QByteArray raw = process.readAllStandardOutput();
+    QString output = decodeGbk(raw);
+
+    QStringList lines = output.split("\n");
     for (const QString& line : lines) {
-        if (line.trimmed().startsWith("SSID") && !line.contains("BSSID")) {
-            QStringList parts = line.split(":");
+        QString trimmed = line.trimmed();
+        if (trimmed.startsWith("SSID") && !trimmed.contains("BSSID")) {
+            QStringList parts = trimmed.split(":");
             if (parts.size() >= 2) {
                 return parts[1].trimmed();
             }
@@ -176,18 +250,24 @@ QString NetworkMonitor::getCurrentWifiSsid()
 }
 
 /**
- * @brief 连接 WiFi（生成 XML 配置文件 + netsh wlan connect）
+ * @brief 连接 WiFi（生成 XML 配置文件 + netsh wlan connect，兼容多网卡）
  */
 void NetworkMonitor::connectToWifi(const QString& ssid, const QString& password)
 {
-    QtConcurrent::run([ssid, password]() {
-        // 生成 WLAN 配置文件
+    QtConcurrent::run([this, ssid, password]() {
+        // ===================== 1. 生成 WPA2-PSK 无线网络配置 XML =====================
+        QByteArray ssidBytes = ssid.toUtf8();
+        QString hexSsid = ssidBytes.toHex().toUpper();
+
         QString xmlContent = QString(
             "<?xml version=\"1.0\"?>"
             "<WLANProfile xmlns=\"http://www.microsoft.com/networking/WLAN/profile/v1\">"
             "    <name>%1</name>"
             "    <SSIDConfig>"
-            "        <SSID><name>%1</name></SSID>"
+            "        <SSID>"
+            "            <hex>%2</hex>"
+            "            <name>%1</name>"
+            "        </SSID>"
             "    </SSIDConfig>"
             "    <connectionType>ESS</connectionType>"
             "    <connectionMode>auto</connectionMode>"
@@ -201,52 +281,54 @@ void NetworkMonitor::connectToWifi(const QString& ssid, const QString& password)
             "            <sharedKey>"
             "                <keyType>passPhrase</keyType>"
             "                <protected>false</protected>"
-            "                <keyMaterial>%2</keyMaterial>"
+            "                <keyMaterial>%3</keyMaterial>"
             "            </sharedKey>"
             "        </security>"
             "    </MSM>"
             "</WLANProfile>"
-        ).arg(ssid, password);
+        ).arg(ssid, hexSsid, password);
 
-        QString xmlFile = QCoreApplication::applicationDirPath() + "/wifi_profile.xml";
+        QtLogger::WriteLog("NetworkMonitor: 已生成WiFi配置文件, SSID=" + ssid);
+
+        // 写入临时XML配置文件
+        const QString xmlFile = QCoreApplication::applicationDirPath() + "/wifi_profile_temp.xml";
         QFile file(xmlFile);
-        if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-            QTextStream out(&file);
-            out << xmlContent;
-            file.close();
-        } else {
-            QtLogger::WriteLog("NetworkMonitor: 无法写入 WiFi 配置文件");
+        if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+        {
+            QtLogger::WriteLog("NetworkMonitor: 错误 - 无法写入临时WiFi配置文件");
             return;
         }
+        QTextStream out(&file);
+        out << xmlContent;
+        file.close();
 
-        QProcess addProfile;
-        addProfile.start("netsh", {"wlan", "add", "profile",
-                                    QString("filename=%1").arg(xmlFile), "user=all"});
-        addProfile.waitForFinished();
+        // ===================== 2. 向系统添加WiFi配置文件 =====================
+        QProcess addProfileProc;
+        // 标准参数列表调用，避免命令拼接出错
+        addProfileProc.start("netsh", { "wlan", "add", "profile", "filename=" + xmlFile, "user=all" });
+        addProfileProc.waitForFinished(3000);
+        QString addResult = QString::fromUtf8(addProfileProc.readAllStandardOutput()).trimmed();
+        QtLogger::WriteLog("NetworkMonitor: add profile 结果: " + addResult);
 
-        QProcess connect;
-        connect.start("netsh", {"wlan", "connect",
-                                 QString("name=%1").arg(ssid),
-                                 QString("ssid=%1").arg(ssid)});
-        connect.waitForFinished();
+        // ===================== 3. 连接WiFi（与原项目方式一致） =====================
+        QProcess connectProc;
+        connectProc.start("netsh", {"wlan", "connect",
+                                     QString("name=%1").arg(ssid),
+                                     QString("ssid=%1").arg(ssid)});
+        connectProc.waitForFinished(5000);
 
-        if (connect.exitCode() == 0) {
+        if (connectProc.exitCode() == 0) {
             QtLogger::WriteLog("NetworkMonitor: WiFi 连接指令已发送: " + ssid);
+            QThread::sleep(2);
+            emit wifiConnected(ssid);
         } else {
-            QtLogger::WriteLog("NetworkMonitor: WiFi 连接失败: " +
-                QString::fromLocal8Bit(connect.readAllStandardError()));
+            QString errMsg = QString::fromUtf8(connectProc.readAllStandardOutput()).trimmed();
+            if (errMsg.isEmpty()) errMsg = QString::fromUtf8(connectProc.readAllStandardError()).trimmed();
+            QtLogger::WriteLog("NetworkMonitor: WiFi 连接失败: " + errMsg);
         }
-    });
+
+        // ===================== 5. 清理临时文件 =====================
+        QFile::remove(xmlFile);
+        });
 }
 
-/**
- * @brief 网络重连（ipconfig /release + /renew）
- */
-void NetworkMonitor::reconnectNetwork()
-{
-    QtLogger::WriteLog("NetworkMonitor: 尝试网络重连 (ipconfig /renew)");
-    QtConcurrent::run([]() {
-        QProcess::execute("ipconfig", {"/release"});
-        QProcess::execute("ipconfig", {"/renew"});
-    });
-}
